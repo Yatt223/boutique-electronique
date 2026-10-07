@@ -11,4 +11,4 @@ Application de gestion pour une boutique de téléphones, tablettes et accessoir
 
 ## Lancer le projet
 npm install
-ng serve
+#ng serve

@@ -1,0 +1,159 @@
+{
+  "employes": [
+    {
+      "id": 1,
+      "nom": "Admin",
+      "prenom": "Super",
+      "email": "admin@boutique.local",
+      "motDePasse": "admin123",
+      "role": "ADMIN",
+      "actif": true,
+      "dateEmbauche": "2026-01-05"
+    },
+    {
+      "id": 2,
+      "nom": "Diallo",
+      "prenom": "Awa",
+      "email": "awa@boutique.local",
+      "motDePasse": "caisse123",
+      "role": "CAISSIER",
+      "actif": true,
+      "dateEmbauche": "2026-03-12"
+    }
+  ],
+  "categories": [
+    { "id": 1, "nom": "Téléphones" },
+    { "id": 2, "nom": "Tablettes" },
+    { "id": 3, "nom": "Écouteurs" },
+    { "id": 4, "nom": "Chargeurs" },
+    { "id": 5, "nom": "Accessoires" }
+  ],
+  "produits": [
+    {
+      "id": 1,
+      "nom": "Smartphone Galaxy A15",
+      "reference": "TEL-001",
+      "categorieId": 1,
+      "etat": "NEUF",
+      "prixAchat": 120,
+      "prixVente": 169,
+      "seuilAlerte": 3,
+      "actif": true
+    },
+    {
+      "id": 2,
+      "nom": "iPhone 12 128 Go",
+      "reference": "TEL-002",
+      "categorieId": 1,
+      "etat": "RECONDITIONNE",
+      "prixAchat": 280,
+      "prixVente": 379,
+      "seuilAlerte": 2,
+      "actif": true
+    },
+    {
+      "id": 3,
+      "nom": "Tablette Lenovo Tab M10",
+      "reference": "TAB-001",
+      "categorieId": 2,
+      "etat": "NEUF",
+      "prixAchat": 110,
+      "prixVente": 159,
+      "seuilAlerte": 2,
+      "actif": true
+    },
+    {
+      "id": 4,
+      "nom": "Écouteurs Bluetooth TWS",
+      "reference": "ECO-001",
+      "categorieId": 3,
+      "etat": "NEUF",
+      "prixAchat": 8,
+      "prixVente": 19,
+      "seuilAlerte": 10,
+      "actif": true
+    },
+    {
+      "id": 5,
+      "nom": "Chargeur rapide USB-C 20W",
+      "reference": "CHA-001",
+      "categorieId": 4,
+      "etat": "NEUF",
+      "prixAchat": 4,
+      "prixVente": 12,
+      "seuilAlerte": 10,
+      "actif": true
+    },
+    {
+      "id": 6,
+      "nom": "Coque de protection universelle",
+      "reference": "ACC-001",
+      "categorieId": 5,
+      "etat": "NEUF",
+      "prixAchat": 1,
+      "prixVente": 5,
+      "seuilAlerte": 15,
+      "actif": true
+    }
+  ],
+  "mouvements": [
+    {
+      "id": 1,
+      "produitId": 1,
+      "type": "ENTREE",
+      "quantite": 10,
+      "motif": "ACHAT_FOURNISSEUR",
+      "date": "2026-10-01T09:00:00",
+      "employeId": 1
+    },
+    {
+      "id": 2,
+      "produitId": 2,
+      "type": "ENTREE",
+      "quantite": 5,
+      "motif": "ACHAT_FOURNISSEUR",
+      "date": "2026-10-01T09:00:00",
+      "employeId": 1
+    },
+    {
+      "id": 3,
+      "produitId": 3,
+      "type": "ENTREE",
+      "quantite": 6,
+      "motif": "ACHAT_FOURNISSEUR",
+      "date": "2026-10-01T09:00:00",
+      "employeId": 1
+    },
+    {
+      "id": 4,
+      "produitId": 4,
+      "type": "ENTREE",
+      "quantite": 40,
+      "motif": "ACHAT_FOURNISSEUR",
+      "date": "2026-10-01T09:00:00",
+      "employeId": 1
+    },
+    {
+      "id": 5,
+      "produitId": 5,
+      "type": "ENTREE",
+      "quantite": 50,
+      "motif": "ACHAT_FOURNISSEUR",
+      "date": "2026-10-01T09:00:00",
+      "employeId": 1
+    },
+    {
+      "id": 6,
+      "produitId": 6,
+      "type": "ENTREE",
+      "quantite": 100,
+      "motif": "ACHAT_FOURNISSEUR",
+      "date": "2026-10-01T09:00:00",
+      "employeId": 1
+    }
+  ],
+  "ventes": [],
+  "commandes": [],
+  "sessions": [],
+  "depenses": []
+}
