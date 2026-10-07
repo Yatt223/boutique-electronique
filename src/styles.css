@@ -8,3 +8,39 @@ body {
   color: #0f172a;
   line-height: 1.5;
 }
+/* ----- Classes réutilisables ----- */
+.carte {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.04);
+  padding: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.page-header h2 { margin: 0; font-size: 1.6rem; }
+.sous-titre { margin: 0.25rem 0 0; color: #64748b; font-size: 0.9rem; }
+
+.btn {
+  display: inline-block;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primaire { background: #4f46e5; color: white; }
+.btn-primaire:hover { background: #4338ca; }
+.btn-secondaire { background: white; color: #334155; border-color: #cbd5e1; }
+.btn-secondaire:hover { background: #f1f5f9; }
+.btn-danger { background: #fee2e2; color: #b91c1c; }
+.btn-danger:hover { background: #fecaca; }

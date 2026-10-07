@@ -1,0 +1,114 @@
+:host {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ----- Menu latéral ----- */
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #1e293b;
+  color: #cbd5e1;
+}
+.logo {
+  padding: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+}
+nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.75rem;
+}
+nav a,
+.lien-caisse {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+nav a:hover,
+.lien-caisse:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+nav a.actif {
+  background: #4f46e5;
+  color: white;
+}
+.icone {
+  width: 1.5rem;
+  text-align: center;
+}
+.lien-caisse {
+  margin: 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.9rem;
+}
+
+/* ----- Zone de contenu ----- */
+.contenu {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.5rem;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+.espace {
+  font-weight: 600;
+  color: #475569;
+}
+.burger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+main {
+  flex: 1;
+  padding: 1.5rem;
+}
+.voile {
+  display: none;
+}
+
+/* ----- Téléphone / tablette : le menu devient un tiroir ----- */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 20;
+    transform: translateX(-100%);
+    transition: transform 0.25s;
+  }
+  .sidebar.ouvert {
+    transform: translateX(0);
+  }
+  .voile {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background: rgba(15, 23, 42, 0.5);
+  }
+  .burger {
+    display: block;
+  }
+}

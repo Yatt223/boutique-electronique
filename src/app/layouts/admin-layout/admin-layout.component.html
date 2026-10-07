@@ -1,0 +1,29 @@
+<aside class="sidebar" [class.ouvert]="menuOuvert()">
+  <div class="logo">📱 Boutique</div>
+
+  <nav>
+    @for (item of menu; track item.lien) {
+      <a [routerLink]="item.lien" routerLinkActive="actif" (click)="fermerMenu()">
+        <span class="icone">{{ item.icone }}</span>
+        {{ item.libelle }}
+      </a>
+    }
+  </nav>
+
+  <a class="lien-caisse" routerLink="/vente">🖥️ Ouvrir l'interface de vente</a>
+</aside>
+
+@if (menuOuvert()) {
+  <div class="voile" (click)="fermerMenu()"></div>
+}
+
+<div class="contenu">
+  <header class="topbar">
+    <button class="burger" type="button" (click)="basculerMenu()">☰</button>
+    <span class="espace">Espace administration</span>
+  </header>
+
+  <main>
+    <router-outlet />
+  </main>
+</div>
