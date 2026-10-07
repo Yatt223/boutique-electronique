@@ -1,0 +1,99 @@
+<div class="carte form-carte">
+  <h2>{{ employeId ? "Modifier" : "Ajouter" }} un employé</h2>
+  <p class="sous-titre">Le rôle détermine les droits d'accès de l'employé.</p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grille">
+      <div class="champ">
+        <label for="prenom">Prénom</label>
+        <input id="prenom" formControlName="prenom" />
+        @if (form.controls.prenom.touched && form.controls.prenom.errors) {
+          <small class="erreur"
+            >Prénom obligatoire (2 caractères minimum)</small
+          >
+        }
+      </div>
+
+      <div class="champ">
+        <label for="nom">Nom</label>
+        <input id="nom" formControlName="nom" />
+        @if (form.controls.nom.touched && form.controls.nom.errors) {
+          <small class="erreur">Nom obligatoire (2 caractères minimum)</small>
+        }
+      </div>
+
+      <div class="champ pleine-largeur">
+        <label for="email">Email (identifiant de connexion)</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="prenom.nom@boutique.local"
+        />
+        @if (form.controls.email.touched && form.controls.email.errors) {
+          <small class="erreur">Email invalide</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="motDePasse">
+          {{ employeId ? "Nouveau mot de passe (facultatif)" : "Mot de passe" }}
+        </label>
+        <input
+          id="motDePasse"
+          type="password"
+          formControlName="motDePasse"
+          autocomplete="new-password"
+        />
+        @if (
+          form.controls.motDePasse.touched && form.controls.motDePasse.errors
+        ) {
+          <small class="erreur">6 caractères minimum</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="role">Rôle</label>
+        <select id="role" formControlName="role">
+          @for (r of roles; track r.valeur) {
+            <option [value]="r.valeur">{{ r.libelle }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="champ">
+        <label for="dateEmbauche">Date d'embauche</label>
+        <input id="dateEmbauche" type="date" formControlName="dateEmbauche" />
+        @if (
+          form.controls.dateEmbauche.touched &&
+          form.controls.dateEmbauche.errors
+        ) {
+          <small class="erreur">Date obligatoire</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label>Statut</label>
+        <label class="case">
+          <input type="checkbox" formControlName="actif" />
+          Compte actif
+        </label>
+      </div>
+    </div>
+
+    @if (erreur()) {
+      <p class="alerte">{{ erreur() }}</p>
+    }
+
+    <div class="boutons">
+      <a class="btn btn-secondaire" routerLink="/admin/employes">Annuler</a>
+      <button
+        class="btn btn-primaire"
+        type="submit"
+        [disabled]="enregistrement()"
+      >
+        {{ enregistrement() ? "Enregistrement..." : "Enregistrer" }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -17,6 +17,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [authGuard],
+    canActivateChild: [authGuard],
     data: { roles: ['ADMIN', 'MANAGER'] },
     loadComponent: () =>
       import('./layouts/admin-layout/admin-layout.component').then(
@@ -27,38 +28,68 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: placeholder,
-        data: { titre: 'Tableau de bord' },
+        data: { titre: 'Tableau de bord', permission: 'dashboard:voir' },
       },
       {
         path: 'produits',
         loadComponent: placeholder,
-        data: { titre: 'Produits' },
+        data: { titre: 'Produits', permission: 'produits:gerer' },
       },
-      { path: 'stocks', loadComponent: placeholder, data: { titre: 'Stocks' } },
-      { path: 'ventes', loadComponent: placeholder, data: { titre: 'Ventes' } },
+      {
+        path: 'stocks',
+        loadComponent: placeholder,
+        data: { titre: 'Stocks', permission: 'stocks:gerer' },
+      },
+      {
+        path: 'ventes',
+        loadComponent: placeholder,
+        data: { titre: 'Ventes', permission: 'ventes:voir' },
+      },
       {
         path: 'commandes',
         loadComponent: placeholder,
-        data: { titre: 'Commandes' },
+        data: { titre: 'Commandes', permission: 'commandes:gerer' },
       },
-      { path: 'caisse', loadComponent: placeholder, data: { titre: 'Caisse' } },
+      {
+        path: 'caisse',
+        loadComponent: placeholder,
+        data: { titre: 'Caisse', permission: 'caisse:gerer' },
+      },
       {
         path: 'depenses',
         loadComponent: placeholder,
-        data: { titre: 'Dépenses' },
+        data: { titre: 'Dépenses', permission: 'depenses:gerer' },
       },
       {
         path: 'employes',
-        canActivate: [authGuard],
-        data: { titre: 'Employés', roles: ['ADMIN'] }, // réservé à l'administrateur
-        loadComponent: placeholder,
+        data: { permission: 'employes:gerer' },
+        loadComponent: () =>
+          import('./features/employes/employe-list/employe-list.component').then(
+            (m) => m.EmployeListComponent,
+          ),
+      },
+      {
+        path: 'employes/nouveau',
+        data: { permission: 'employes:gerer' },
+        loadComponent: () =>
+          import('./features/employes/employe-form/employe-form.component').then(
+            (m) => m.EmployeFormComponent,
+          ),
+      },
+      {
+        path: 'employes/:id/modifier',
+        data: { permission: 'employes:gerer' },
+        loadComponent: () =>
+          import('./features/employes/employe-form/employe-form.component').then(
+            (m) => m.EmployeFormComponent,
+          ),
       },
     ],
   },
   {
     path: 'vente',
     canActivate: [authGuard],
-    data: { roles: ['ADMIN', 'MANAGER', 'CAISSIER'] },
+    data: { permission: 'ventes:creer' },
     loadComponent: () =>
       import('./layouts/caisse-layout/caisse-layout.component').then(
         (m) => m.CaisseLayoutComponent,

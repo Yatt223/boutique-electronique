@@ -2,7 +2,7 @@
   <div class="logo">📱 Boutique</div>
 
   <nav>
-    @for (item of menu; track item.lien) {
+    @for (item of menuVisible(); track item.lien) {
       <a
         [routerLink]="item.lien"
         routerLinkActive="actif"

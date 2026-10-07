@@ -2,24 +2,25 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { Role } from '../models/employe.model';
+import { Permission } from '../models/permission.model';
 
 export const authGuard: CanActivateFn = (route) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  // 1. Pas connecté : direction la page de connexion
   if (!auth.estConnecte()) {
     return router.createUrlTree(['/login']);
   }
 
-  // 2. Rôles autorisés (définis dans `data` de la route)
-  const rolesAutorises = route.data['roles'] as Role[] | undefined;
+  const roles = route.data['roles'] as Role[] | undefined;
+  const permission = route.data['permission'] as Permission | undefined;
   const role = auth.role();
 
-  if (!rolesAutorises || (role && rolesAutorises.includes(role))) {
-    return true;
-  }
+  const roleOk = !roles || (role !== null && roles.includes(role));
+  const permissionOk = !permission || auth.peut(permission);
 
-  // 3. Connecté mais pas le bon rôle : retour à SA page d'accueil
-  return router.createUrlTree([auth.routeParDefaut()]);
+  // Refusé : retour à SA page d'accueil
+  return roleOk && permissionOk
+    ? true
+    : router.createUrlTree([auth.routeParDefaut()]);
 };

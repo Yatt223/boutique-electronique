@@ -1,6 +1,15 @@
-import { Component, signal, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { Permission } from '../../core/models/permission.model';
+
+interface ItemMenu {
+  libelle: string;
+  lien: string;
+  icone: string;
+  permission: Permission;
+}
+
 @Component({
   selector: 'app-admin-layout',
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
@@ -9,19 +18,65 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class AdminLayoutComponent {
   private auth = inject(AuthService);
-  utilisateur = this.auth.utilisateur;
 
-  menuOuvert = signal(false); // utile sur telephone et tablette pour ouvrir/fermer le menu latéral
-  menu = [
-    { libelle: 'Tableau de bord', lien: '/admin/dashboard', icone: '📊' },
-    { libelle: 'Produits', lien: '/admin/produits', icone: '📦' },
-    { libelle: 'Stocks', lien: '/admin/stocks', icone: '🏬' },
-    { libelle: 'Ventes', lien: '/admin/ventes', icone: '🧾' },
-    { libelle: 'Commandes', lien: '/admin/commandes', icone: '🛒' },
-    { libelle: 'Caisse', lien: '/admin/caisse', icone: '💰' },
-    { libelle: 'Dépenses', lien: '/admin/depenses', icone: '💸' },
-    { libelle: 'Employés', lien: '/admin/employes', icone: '👥' },
+  utilisateur = this.auth.utilisateur;
+  menuOuvert = signal(false);
+
+  private menu: ItemMenu[] = [
+    {
+      libelle: 'Tableau de bord',
+      lien: '/admin/dashboard',
+      icone: '📊',
+      permission: 'dashboard:voir',
+    },
+    {
+      libelle: 'Produits',
+      lien: '/admin/produits',
+      icone: '📦',
+      permission: 'produits:gerer',
+    },
+    {
+      libelle: 'Stocks',
+      lien: '/admin/stocks',
+      icone: '🏬',
+      permission: 'stocks:gerer',
+    },
+    {
+      libelle: 'Ventes',
+      lien: '/admin/ventes',
+      icone: '🧾',
+      permission: 'ventes:voir',
+    },
+    {
+      libelle: 'Commandes',
+      lien: '/admin/commandes',
+      icone: '🛒',
+      permission: 'commandes:gerer',
+    },
+    {
+      libelle: 'Caisse',
+      lien: '/admin/caisse',
+      icone: '💰',
+      permission: 'caisse:gerer',
+    },
+    {
+      libelle: 'Dépenses',
+      lien: '/admin/depenses',
+      icone: '💸',
+      permission: 'depenses:gerer',
+    },
+    {
+      libelle: 'Employés',
+      lien: '/admin/employes',
+      icone: '👥',
+      permission: 'employes:gerer',
+    },
   ];
+
+  /** Seules les entrées autorisées pour le rôle de l'utilisateur connecté. */
+  menuVisible = computed(() =>
+    this.menu.filter((item) => this.auth.peut(item.permission)),
+  );
 
   basculerMenu(): void {
     this.menuOuvert.update((ouvert) => !ouvert);

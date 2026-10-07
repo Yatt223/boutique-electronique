@@ -19,14 +19,49 @@
       "role": "CAISSIER",
       "actif": true,
       "dateEmbauche": "2026-03-12"
+    },
+    {
+      "prenom": "Mohamed",
+      "nom": "YATTOURA chef",
+      "email": "mohamedbakaryyattoura@gmail.com",
+      "role": "ADMIN",
+      "dateEmbauche": "2026-10-07",
+      "actif": true,
+      "motDePasse": "123456",
+      "id": 3
+    },
+    {
+      "prenom": "Aliou",
+      "nom": "DIARRA",
+      "email": "alioudiarra@gmail.com",
+      "role": "MANAGER",
+      "dateEmbauche": "2026-10-07",
+      "actif": true,
+      "motDePasse": "123456",
+      "id": 4
     }
   ],
   "categories": [
-    { "id": 1, "nom": "Téléphones" },
-    { "id": 2, "nom": "Tablettes" },
-    { "id": 3, "nom": "Écouteurs" },
-    { "id": 4, "nom": "Chargeurs" },
-    { "id": 5, "nom": "Accessoires" }
+    {
+      "id": 1,
+      "nom": "Téléphones"
+    },
+    {
+      "id": 2,
+      "nom": "Tablettes"
+    },
+    {
+      "id": 3,
+      "nom": "Écouteurs"
+    },
+    {
+      "id": 4,
+      "nom": "Chargeurs"
+    },
+    {
+      "id": 5,
+      "nom": "Accessoires"
+    }
   ],
   "produits": [
     {

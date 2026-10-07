@@ -1,0 +1,103 @@
+<div class="page-header">
+  <div>
+    <h2>Employés</h2>
+    <p class="sous-titre">
+      {{ employesFiltres().length }} sur {{ employes().length }} employé(s)
+    </p>
+  </div>
+  <a class="btn btn-primaire" routerLink="/admin/employes/nouveau"
+    >+ Nouvel employé</a
+  >
+</div>
+
+<div class="filtres">
+  <input
+    type="search"
+    placeholder="Rechercher un nom, un email..."
+    (input)="onRecherche($event)"
+  />
+  <select (change)="onFiltreRole($event)">
+    <option value="">Tous les rôles</option>
+    @for (r of roles; track r.valeur) {
+      <option [value]="r.valeur">{{ r.libelle }}</option>
+    }
+  </select>
+</div>
+
+<div class="carte table-wrap">
+  @if (chargement()) {
+    <p class="vide">Chargement...</p>
+  } @else if (erreur()) {
+    <p class="vide">{{ erreur() }}</p>
+  } @else if (employesFiltres().length === 0) {
+    <p class="vide">Aucun employé trouvé.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Employé</th>
+          <th>Rôle</th>
+          <th>Embauche</th>
+          <th>Statut</th>
+          <th class="droite">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of employesFiltres(); track e.id) {
+          <tr>
+            <td>
+              <div class="identite">
+                <span class="avatar">{{ initiales(e) }}</span>
+                <div>
+                  <div class="nom">{{ e.prenom }} {{ e.nom }}</div>
+                  <div class="email">{{ e.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span [class]="'badge ' + classeRole(e.role)">{{
+                libelles[e.role]
+              }}</span>
+            </td>
+            <td>{{ e.dateEmbauche | date: "dd/MM/yyyy" }}</td>
+            <td>
+              @if (e.actif) {
+                <span class="badge badge-vert">Actif</span>
+              } @else {
+                <span class="badge badge-rouge">Désactivé</span>
+              }
+            </td>
+            <td>
+              <div class="actions">
+                <a
+                  class="btn btn-secondaire"
+                  [routerLink]="['/admin/employes', e.id, 'modifier']"
+                  >Modifier</a
+                >
+                @if (e.id !== moiId()) {
+                  @if (e.actif) {
+                    <button
+                      type="button"
+                      class="btn btn-danger"
+                      (click)="basculerStatut(e)"
+                    >
+                      Désactiver
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn btn-secondaire"
+                      (click)="basculerStatut(e)"
+                    >
+                      Réactiver
+                    </button>
+                  }
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
