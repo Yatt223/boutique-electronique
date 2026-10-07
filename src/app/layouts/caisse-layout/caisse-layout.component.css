@@ -20,3 +20,33 @@ main {
   flex: 1;
   padding: 1rem;
 }
+
+.barre {
+  justify-content: space-between;
+}
+.droite {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+.lien {
+  color: white;
+  text-decoration: none;
+  opacity: 0.9;
+}
+.lien:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+.btn-deco {
+  padding: 0.45rem 0.9rem;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+}
+.btn-deco:hover {
+  background: rgba(255, 255, 255, 0.35);
+}

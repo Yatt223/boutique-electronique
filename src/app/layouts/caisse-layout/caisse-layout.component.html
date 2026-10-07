@@ -1,5 +1,14 @@
 <header class="barre">
   <span class="titre">📱 Boutique · Caisse</span>
+  <div class="droite">
+    @if (peutAdministrer()) {
+      <a class="lien" routerLink="/admin">← Administration</a>
+    }
+    <span>{{ utilisateur()?.prenom }} {{ utilisateur()?.nom }}</span>
+    <button class="btn-deco" type="button" (click)="deconnexion()">
+      Déconnexion
+    </button>
+  </div>
 </header>
 
 <main>

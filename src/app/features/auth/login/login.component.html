@@ -1,0 +1,50 @@
+<div class="page">
+  <div class="carte-login">
+    <div class="entete">
+      <div class="logo">📱</div>
+      <h1>Boutique</h1>
+      <p>Connectez-vous pour continuer</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="champ">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="admin@boutique.local"
+        />
+        @if (form.controls.email.touched && form.controls.email.errors) {
+          <small class="erreur">Email invalide</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="motDePasse">Mot de passe</label>
+        <input id="motDePasse" type="password" formControlName="motDePasse" />
+        @if (
+          form.controls.motDePasse.touched && form.controls.motDePasse.errors
+        ) {
+          <small class="erreur">Mot de passe obligatoire</small>
+        }
+      </div>
+
+      @if (erreur()) {
+        <p class="alerte">{{ erreur() }}</p>
+      }
+
+      <button class="btn btn-primaire" type="submit" [disabled]="chargement()">
+        {{ chargement() ? "Connexion..." : "Se connecter" }}
+      </button>
+    </form>
+
+    <div class="demo">
+      <div class="demo">
+        <strong>Comptes de démonstration</strong>
+        <span>Admin : admin&#64;boutique.local / admin123</span>
+        <span>Caissière : awa&#64;boutique.local / caisse123</span>
+      </div>
+    </div>
+  </div>
+</div>

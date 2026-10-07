@@ -3,7 +3,11 @@
 
   <nav>
     @for (item of menu; track item.lien) {
-      <a [routerLink]="item.lien" routerLinkActive="actif" (click)="fermerMenu()">
+      <a
+        [routerLink]="item.lien"
+        routerLinkActive="actif"
+        (click)="fermerMenu()"
+      >
         <span class="icone">{{ item.icone }}</span>
         {{ item.libelle }}
       </a>
@@ -21,6 +25,13 @@
   <header class="topbar">
     <button class="burger" type="button" (click)="basculerMenu()">☰</button>
     <span class="espace">Espace administration</span>
+    <div class="utilisateur">
+      <span>{{ utilisateur()?.prenom }} {{ utilisateur()?.nom }}</span>
+      <span class="role">{{ utilisateur()?.role }}</span>
+      <button class="btn btn-secondaire" type="button" (click)="deconnexion()">
+        Déconnexion
+      </button>
+    </div>
   </header>
 
   <main>
