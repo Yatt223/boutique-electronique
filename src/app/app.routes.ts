@@ -32,8 +32,35 @@ export const routes: Routes = [
       },
       {
         path: 'produits',
-        loadComponent: placeholder,
-        data: { titre: 'Produits', permission: 'produits:gerer' },
+        data: { permission: 'produits:gerer' },
+        loadComponent: () =>
+          import('./features/produits/produit-list/produit-list.component').then(
+            (m) => m.ProduitListComponent,
+          ),
+      },
+      {
+        path: 'produits/categories',
+        data: { permission: 'produits:gerer' },
+        loadComponent: () =>
+          import('./features/produits/categorie-list/categorie-list.component').then(
+            (m) => m.CategorieListComponent,
+          ),
+      },
+      {
+        path: 'produits/nouveau',
+        data: { permission: 'produits:gerer' },
+        loadComponent: () =>
+          import('./features/produits/produit-form/produit-form.component').then(
+            (m) => m.ProduitFormComponent,
+          ),
+      },
+      {
+        path: 'produits/:id/modifier',
+        data: { permission: 'produits:gerer' },
+        loadComponent: () =>
+          import('./features/produits/produit-form/produit-form.component').then(
+            (m) => m.ProduitFormComponent,
+          ),
       },
       {
         path: 'stocks',

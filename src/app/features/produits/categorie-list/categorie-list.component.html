@@ -1,0 +1,59 @@
+<div class="page-header">
+  <div>
+    <h2>Catégories</h2>
+    <p class="sous-titre">{{ categories().length }} catégorie(s)</p>
+  </div>
+  <a class="btn btn-secondaire" routerLink="/admin/produits"
+    >← Retour aux produits</a
+  >
+</div>
+
+<div class="carte">
+  <form class="ajout" (ngSubmit)="ajouter()">
+    <input
+      type="text"
+      placeholder="Nouvelle catégorie (ex : Montres connectées)"
+      [formControl]="nom"
+    />
+    <button class="btn btn-primaire" type="submit">Ajouter</button>
+  </form>
+
+  @if (erreur()) {
+    <p class="alerte">{{ erreur() }}</p>
+  }
+</div>
+
+<div class="carte table-wrap liste">
+  @if (categories().length === 0) {
+    <p class="vide">Aucune catégorie.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Produits</th>
+          <th class="droite">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of categories(); track c.id) {
+          <tr>
+            <td class="nom">{{ c.nom }}</td>
+            <td>{{ nombreProduits().get(c.id) ?? 0 }}</td>
+            <td>
+              <div class="actions">
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  (click)="supprimer(c)"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

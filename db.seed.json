@@ -19,14 +19,49 @@
       "role": "CAISSIER",
       "actif": true,
       "dateEmbauche": "2026-03-12"
+    },
+    {
+      "prenom": "Mohamed",
+      "nom": "YATTOURA chef",
+      "email": "mohamedbakaryyattoura@gmail.com",
+      "role": "ADMIN",
+      "dateEmbauche": "2026-10-07",
+      "actif": true,
+      "motDePasse": "123456",
+      "id": 3
+    },
+    {
+      "prenom": "Aliou",
+      "nom": "DIARRA",
+      "email": "alioudiarra@gmail.com",
+      "role": "MANAGER",
+      "dateEmbauche": "2026-10-07",
+      "actif": true,
+      "motDePasse": "123456",
+      "id": 4
     }
   ],
   "categories": [
-    { "id": 1, "nom": "Téléphones" },
-    { "id": 2, "nom": "Tablettes" },
-    { "id": 3, "nom": "Écouteurs" },
-    { "id": 4, "nom": "Chargeurs" },
-    { "id": 5, "nom": "Accessoires" }
+    {
+      "id": 1,
+      "nom": "Téléphones"
+    },
+    {
+      "id": 2,
+      "nom": "Tablettes"
+    },
+    {
+      "id": 3,
+      "nom": "Écouteurs"
+    },
+    {
+      "id": 4,
+      "nom": "Chargeurs"
+    },
+    {
+      "id": 5,
+      "nom": "Accessoires"
+    }
   ],
   "produits": [
     {
@@ -35,8 +70,8 @@
       "reference": "TEL-001",
       "categorieId": 1,
       "etat": "NEUF",
-      "prixAchat": 120,
-      "prixVente": 169,
+      "prixAchat": 85000,
+      "prixVente": 110000,
       "seuilAlerte": 3,
       "actif": true
     },
@@ -46,8 +81,8 @@
       "reference": "TEL-002",
       "categorieId": 1,
       "etat": "RECONDITIONNE",
-      "prixAchat": 280,
-      "prixVente": 379,
+      "prixAchat": 210000,
+      "prixVente": 275000,
       "seuilAlerte": 2,
       "actif": true
     },
@@ -57,8 +92,8 @@
       "reference": "TAB-001",
       "categorieId": 2,
       "etat": "NEUF",
-      "prixAchat": 110,
-      "prixVente": 159,
+      "prixAchat": 75000,
+      "prixVente": 100000,
       "seuilAlerte": 2,
       "actif": true
     },
@@ -68,8 +103,8 @@
       "reference": "ECO-001",
       "categorieId": 3,
       "etat": "NEUF",
-      "prixAchat": 8,
-      "prixVente": 19,
+      "prixAchat": 4000,
+      "prixVente": 8000,
       "seuilAlerte": 10,
       "actif": true
     },
@@ -79,8 +114,8 @@
       "reference": "CHA-001",
       "categorieId": 4,
       "etat": "NEUF",
-      "prixAchat": 4,
-      "prixVente": 12,
+      "prixAchat": 2500,
+      "prixVente": 5000,
       "seuilAlerte": 10,
       "actif": true
     },
@@ -90,8 +125,8 @@
       "reference": "ACC-001",
       "categorieId": 5,
       "etat": "NEUF",
-      "prixAchat": 1,
-      "prixVente": 5,
+      "prixAchat": 500,
+      "prixVente": 2000,
       "seuilAlerte": 15,
       "actif": true
     }

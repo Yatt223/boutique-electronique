@@ -1,0 +1,10 @@
+.ajout {
+  display: flex;
+  gap: 0.75rem;
+}
+.ajout input {
+  flex: 1;
+}
+.liste {
+  margin-top: 1.25rem;
+}

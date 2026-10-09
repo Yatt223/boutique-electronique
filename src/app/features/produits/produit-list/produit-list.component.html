@@ -1,0 +1,97 @@
+<div class="page-header">
+  <div>
+    <h2>Produits</h2>
+    <p class="sous-titre">
+      {{ produitsFiltres().length }} sur {{ produits().length }} produit(s)
+    </p>
+  </div>
+  <div class="actions-entete">
+    <a class="btn btn-secondaire" routerLink="/admin/produits/categories"
+      >Catégories</a
+    >
+    <a class="btn btn-primaire" routerLink="/admin/produits/nouveau"
+      >+ Nouveau produit</a
+    >
+  </div>
+</div>
+
+<div class="filtres">
+  <input
+    type="search"
+    placeholder="Rechercher un nom, une référence..."
+    (input)="onRecherche($event)"
+  />
+
+  <select (change)="onFiltreCategorie($event)">
+    <option value="0">Toutes les catégories</option>
+    @for (c of categories(); track c.id) {
+      <option [value]="c.id">{{ c.nom }}</option>
+    }
+  </select>
+
+  <select (change)="onFiltreEtat($event)">
+    <option value="">Neuf et reconditionné</option>
+    <option value="NEUF">Neuf</option>
+    <option value="RECONDITIONNE">Reconditionné</option>
+  </select>
+</div>
+
+@if (chargement()) {
+  <div class="carte"><p class="vide">Chargement...</p></div>
+} @else if (erreur()) {
+  <div class="carte">
+    <p class="vide">{{ erreur() }}</p>
+  </div>
+} @else if (produitsFiltres().length === 0) {
+  <div class="carte"><p class="vide">Aucun produit trouvé.</p></div>
+} @else {
+  <div class="grille-produits">
+    @for (p of produitsFiltres(); track p.id) {
+      <article class="produit" [class.inactif]="!p.actif">
+        <div class="photo">
+          @if (p.imageUrl) {
+            <img [src]="p.imageUrl" [alt]="p.nom" />
+          } @else {
+            <span class="sans-image">📷</span>
+          }
+          <span
+            class="etat badge"
+            [class.badge-vert]="p.etat === 'NEUF'"
+            [class.badge-bleu]="p.etat === 'RECONDITIONNE'"
+          >
+            {{ p.etat === "NEUF" ? "Neuf" : "Reconditionné" }}
+          </span>
+        </div>
+
+        <div class="corps">
+          <div class="nom">{{ p.nom }}</div>
+          <div class="email">
+            {{ p.reference }} ·
+            {{ nomsCategories().get(p.categorieId) ?? "Sans catégorie" }}
+          </div>
+          <div class="prix">{{ p.prixVente | fcfa }}</div>
+          @if (!p.actif) {
+            <span class="badge badge-rouge">Désactivé</span>
+          }
+        </div>
+
+        <div class="pied">
+          <a
+            class="btn btn-secondaire"
+            [routerLink]="['/admin/produits', p.id, 'modifier']"
+            >Modifier</a
+          >
+          <button
+            type="button"
+            class="btn"
+            [class.btn-danger]="p.actif"
+            [class.btn-secondaire]="!p.actif"
+            (click)="basculerStatut(p)"
+          >
+            {{ p.actif ? "Désactiver" : "Réactiver" }}
+          </button>
+        </div>
+      </article>
+    }
+  </div>
+}

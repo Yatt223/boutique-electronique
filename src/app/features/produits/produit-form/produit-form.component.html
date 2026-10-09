@@ -1,0 +1,179 @@
+<div class="carte form-carte">
+  <h2>{{ produitId ? "Modifier" : "Ajouter" }} un produit</h2>
+  <p class="sous-titre">Les prix sont exprimés en FCFA.</p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grille">
+      <div class="champ pleine-largeur">
+        <label>Photo du produit</label>
+        <div class="zone-image">
+          <div class="apercu">
+            @if (imageUrl()) {
+              <img [src]="imageUrl()" alt="Aperçu du produit" />
+            } @else {
+              <span>📷</span>
+            }
+          </div>
+          <div class="boutons-image">
+            <label class="btn btn-secondaire" for="fichier"
+              >Choisir une image</label
+            >
+            <input
+              id="fichier"
+              class="cache"
+              type="file"
+              accept="image/*"
+              (change)="onFichier($event)"
+            />
+            @if (imageUrl()) {
+              <button
+                type="button"
+                class="btn btn-danger"
+                (click)="retirerImage()"
+              >
+                Retirer
+              </button>
+            }
+            <small class="indice"
+              >JPG, PNG ou WebP, 5 Mo maximum. L'image est automatiquement
+              réduite.</small
+            >
+          </div>
+        </div>
+        @if (erreurImage()) {
+          <small class="erreur">{{ erreurImage() }}</small>
+        }
+      </div>
+
+      <div class="champ pleine-largeur">
+        <label for="nom">Nom du produit</label>
+        <input id="nom" formControlName="nom" />
+        @if (form.controls.nom.touched && form.controls.nom.errors) {
+          <small class="erreur">Nom obligatoire (2 caractères minimum)</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="reference">Référence</label>
+        <input
+          id="reference"
+          formControlName="reference"
+          placeholder="TEL-003"
+        />
+        @if (
+          form.controls.reference.touched && form.controls.reference.errors
+        ) {
+          <small class="erreur">Référence obligatoire</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="categorieId">Catégorie</label>
+        <select id="categorieId" formControlName="categorieId">
+          <option [ngValue]="0">-- Choisir --</option>
+          @for (c of categories(); track c.id) {
+            <option [ngValue]="c.id">{{ c.nom }}</option>
+          }
+        </select>
+        @if (
+          form.controls.categorieId.touched && form.controls.categorieId.errors
+        ) {
+          <small class="erreur">Choisis une catégorie</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="etat">État</label>
+        <select id="etat" formControlName="etat">
+          <option value="NEUF">Neuf</option>
+          <option value="RECONDITIONNE">Reconditionné</option>
+        </select>
+      </div>
+
+      <div class="champ">
+        <label for="seuilAlerte">Seuil d'alerte de stock</label>
+        <input
+          id="seuilAlerte"
+          type="number"
+          min="0"
+          formControlName="seuilAlerte"
+        />
+        @if (
+          form.controls.seuilAlerte.touched && form.controls.seuilAlerte.errors
+        ) {
+          <small class="erreur">Valeur invalide</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="prixAchat">Prix d'achat (FCFA)</label>
+        <input
+          id="prixAchat"
+          type="number"
+          min="0"
+          formControlName="prixAchat"
+        />
+        @if (
+          form.controls.prixAchat.touched && form.controls.prixAchat.errors
+        ) {
+          <small class="erreur">Prix invalide</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="prixVente">Prix de vente (FCFA)</label>
+        <input
+          id="prixVente"
+          type="number"
+          min="1"
+          formControlName="prixVente"
+        />
+        @if (
+          form.controls.prixVente.touched && form.controls.prixVente.errors
+        ) {
+          <small class="erreur">Prix de vente obligatoire</small>
+        }
+      </div>
+
+      <div class="champ pleine-largeur">
+        <div class="marge" [class.negative]="marge() < 0">
+          Marge unitaire : <strong>{{ marge() | fcfa }}</strong>
+          @if (marge() < 0) {
+            <span> · Attention : vente à perte</span>
+          }
+        </div>
+      </div>
+
+      <div class="champ pleine-largeur">
+        <label for="description">Description (facultative)</label>
+        <textarea
+          id="description"
+          rows="3"
+          formControlName="description"
+        ></textarea>
+      </div>
+
+      <div class="champ">
+        <label class="case">
+          <input type="checkbox" formControlName="actif" />
+          Produit actif (vendable)
+        </label>
+      </div>
+    </div>
+
+    @if (erreur()) {
+      <p class="alerte">{{ erreur() }}</p>
+    }
+
+    <div class="boutons">
+      <a class="btn btn-secondaire" routerLink="/admin/produits">Annuler</a>
+      <button
+        class="btn btn-primaire"
+        type="submit"
+        [disabled]="enregistrement()"
+      >
+        {{ enregistrement() ? "Enregistrement..." : "Enregistrer" }}
+      </button>
+    </div>
+  </form>
+</div>
