@@ -8,7 +8,7 @@ import { ProduitService } from '../../../core/services/produit.service';
 import { CategorieService } from '../../../core/services/categorie.service';
 import { Categorie } from '../../../core/models/categorie.model';
 import { EtatProduit } from '../../../core/models/produit.model';
-import { redimensionnerImage } from '../../../core/utils/image.utils';
+import { redimensionnerImage } from '../../../core/utils/images.utils';
 import { FcfaPipe } from '../../../shared/pipes/fcfa.pipe';
 
 const TAILLE_MAX_FICHIER = 5 * 1024 * 1024; // 5 Mo

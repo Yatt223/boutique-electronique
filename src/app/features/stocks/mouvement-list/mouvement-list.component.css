@@ -1,0 +1,14 @@
+.actions-entete {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.quantite {
+  font-weight: 700;
+}
+.entree {
+  color: #047857;
+}
+.sortie {
+  color: #b91c1c;
+}

@@ -1,0 +1,90 @@
+<div class="carte form-carte">
+  <h2>Nouveau mouvement de stock</h2>
+  <p class="sous-titre">
+    Enregistre une entrée (réception, retour) ou une sortie (casse, perte).
+  </p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grille">
+      <div class="champ pleine-largeur">
+        <label for="produitId">Produit</label>
+        <select id="produitId" formControlName="produitId">
+          <option [ngValue]="0">-- Choisir un produit --</option>
+          @for (p of produits(); track p.id) {
+            <option [ngValue]="p.id">{{ p.nom }} ({{ p.reference }})</option>
+          }
+        </select>
+        @if (
+          form.controls.produitId.touched && form.controls.produitId.errors
+        ) {
+          <small class="erreur">Choisis un produit</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="type">Type de mouvement</label>
+        <select id="type" formControlName="type">
+          <option value="ENTREE">Entrée (+)</option>
+          <option value="SORTIE">Sortie (−)</option>
+        </select>
+      </div>
+
+      <div class="champ">
+        <label for="motif">Motif</label>
+        <select id="motif" formControlName="motif">
+          @for (m of motifsDisponibles(); track m) {
+            <option [value]="m">{{ libellesMotifs[m] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="champ">
+        <label for="quantite">Quantité</label>
+        <input id="quantite" type="number" min="1" formControlName="quantite" />
+        @if (form.controls.quantite.touched && form.controls.quantite.errors) {
+          <small class="erreur">Quantité minimum : 1</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="commentaire">Commentaire (facultatif)</label>
+        <input
+          id="commentaire"
+          formControlName="commentaire"
+          placeholder="N° de bon de livraison, cause..."
+        />
+      </div>
+
+      @if (stockCourant() !== null) {
+        <div class="champ pleine-largeur">
+          <div class="bilan" [class.negative]="depassement()">
+            <span
+              >Stock actuel : <strong>{{ stockCourant() }}</strong></span
+            >
+            <span
+              >Après ce mouvement : <strong>{{ stockApres() }}</strong></span
+            >
+            @if (depassement()) {
+              <span>· Quantité supérieure au stock disponible</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (erreur()) {
+      <p class="alerte">{{ erreur() }}</p>
+    }
+
+    <div class="boutons">
+      <a class="btn btn-secondaire" routerLink="/admin/stocks">Annuler</a>
+      <button
+        class="btn btn-primaire"
+        type="submit"
+        [disabled]="enregistrement() || depassement()"
+      >
+        {{ enregistrement() ? "Enregistrement..." : "Enregistrer" }}
+      </button>
+    </div>
+  </form>
+</div>

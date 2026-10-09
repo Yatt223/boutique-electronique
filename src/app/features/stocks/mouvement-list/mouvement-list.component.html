@@ -1,0 +1,94 @@
+<div class="page-header">
+  <div>
+    <h2>Historique des mouvements</h2>
+    <p class="sous-titre">
+      {{ mouvementsFiltres().length }} mouvement(s) · +{{
+        totaux().entrees
+      }}
+      entrées · −{{ totaux().sorties }} sorties
+    </p>
+  </div>
+  <div class="actions-entete">
+    <a class="btn btn-secondaire" routerLink="/admin/stocks"
+      >← État des stocks</a
+    >
+    <a class="btn btn-primaire" routerLink="/admin/stocks/mouvements/nouveau"
+      >+ Mouvement</a
+    >
+  </div>
+</div>
+
+<div class="filtres">
+  <select (change)="onFiltreProduit($event)">
+    <option value="0">Tous les produits</option>
+    @for (p of produits(); track p.id) {
+      <option [value]="p.id">{{ p.nom }}</option>
+    }
+  </select>
+
+  <select (change)="onFiltreType($event)">
+    <option value="">Entrées et sorties</option>
+    <option value="ENTREE">Entrées</option>
+    <option value="SORTIE">Sorties</option>
+  </select>
+
+  <select (change)="onFiltreMotif($event)">
+    <option value="">Tous les motifs</option>
+    @for (m of motifs; track m.valeur) {
+      <option [value]="m.valeur">{{ m.libelle }}</option>
+    }
+  </select>
+</div>
+
+<div class="carte table-wrap">
+  @if (chargement()) {
+    <p class="vide">Chargement...</p>
+  } @else if (erreur()) {
+    <p class="vide">{{ erreur() }}</p>
+  } @else if (mouvementsFiltres().length === 0) {
+    <p class="vide">Aucun mouvement trouvé.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Produit</th>
+          <th>Type</th>
+          <th>Quantité</th>
+          <th>Motif</th>
+          <th>Employé</th>
+          <th>Commentaire</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of mouvementsFiltres(); track m.id) {
+          <tr>
+            <td>{{ m.date | date: "dd/MM/yyyy HH:mm" }}</td>
+            <td class="nom">
+              {{ nomsProduits().get(m.produitId) ?? "Produit supprimé" }}
+            </td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-vert]="m.type === 'ENTREE'"
+                [class.badge-rouge]="m.type === 'SORTIE'"
+              >
+                {{ m.type === "ENTREE" ? "Entrée" : "Sortie" }}
+              </span>
+            </td>
+            <td
+              class="quantite"
+              [class.entree]="m.type === 'ENTREE'"
+              [class.sortie]="m.type === 'SORTIE'"
+            >
+              {{ m.type === "ENTREE" ? "+" : "−" }}{{ m.quantite }}
+            </td>
+            <td>{{ libellesMotifs[m.motif] }}</td>
+            <td>{{ nomsEmployes().get(m.employeId) ?? "-" }}</td>
+            <td>{{ m.commentaire ?? "-" }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

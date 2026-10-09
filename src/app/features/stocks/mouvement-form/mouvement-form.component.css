@@ -1,0 +1,14 @@
+.bilan {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 0.9rem;
+}
+.bilan.negative {
+  background: #fee2e2;
+  color: #b91c1c;
+}

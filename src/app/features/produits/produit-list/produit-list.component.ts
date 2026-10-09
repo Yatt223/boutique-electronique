@@ -6,6 +6,13 @@ import { CategorieService } from '../../../core/services/categorie.service';
 import { Produit, EtatProduit } from '../../../core/models/produit.model';
 import { Categorie } from '../../../core/models/categorie.model';
 import { FcfaPipe } from '../../../shared/pipes/fcfa.pipe';
+import { StockService } from '../../../core/services/stock.service';
+import { MouvementStock } from '../../../core/models/mouvement-stock.model';
+import {
+  CLASSES_STATUT_STOCK,
+  statutStock,
+  stockParProduit,
+} from '../../../core/utils/stock.utils';
 
 @Component({
   selector: 'app-produit-list',
@@ -48,10 +55,12 @@ export class ProduitListComponent implements OnInit {
     forkJoin({
       produits: this.produitService.getAll(),
       categories: this.categorieService.getAll(),
+      mouvements:this.stockService.getMouvements(),
     }).subscribe({
-      next: ({ produits, categories }) => {
+      next: ({ produits, categories, mouvements }) => {
         this.produits.set(produits);
         this.categories.set(categories);
+        this.mouvements.set(mouvements);
         this.chargement.set(false);
       },
       error: () => {
@@ -89,5 +98,20 @@ export class ProduitListComponent implements OnInit {
           liste.map((p) => (p.id === maj.id ? maj : p)),
         );
       });
+  }
+
+  // dans la classe :
+  private stockService = inject(StockService);
+  mouvements = signal<MouvementStock[]>([]);
+  stocks = computed(() => stockParProduit(this.mouvements()));
+
+  stockDe(produit: Produit): number {
+    return this.stocks().get(produit.id) ?? 0;
+  }
+
+  classeStock(produit: Produit): string {
+    return CLASSES_STATUT_STOCK[
+      statutStock(this.stockDe(produit), produit.seuilAlerte)
+    ];
   }
 }

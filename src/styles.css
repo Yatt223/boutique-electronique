@@ -272,3 +272,7 @@ select.ng-invalid.ng-touched {
   padding-top: 1.25rem;
   border-top: 1px solid #e2e8f0;
 }
+.badge-orange {
+  background: #ffedd5;
+  color: #c2410c;
+}

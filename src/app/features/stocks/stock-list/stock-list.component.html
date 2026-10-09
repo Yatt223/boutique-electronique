@@ -1,0 +1,104 @@
+<div class="page-header">
+  <div>
+    <h2>Stocks</h2>
+    <p class="sous-titre">État des stocks en temps réel</p>
+  </div>
+  <div class="actions-entete">
+    <a class="btn btn-secondaire" routerLink="/admin/stocks/mouvements"
+      >Historique</a
+    >
+    <a class="btn btn-primaire" routerLink="/admin/stocks/mouvements/nouveau"
+      >+ Mouvement</a
+    >
+  </div>
+</div>
+
+<div class="resume">
+  <div class="indicateur">
+    <span class="valeur">{{ resume().valeurTotale | fcfa }}</span>
+    <span class="libelle">Valeur du stock (prix d'achat)</span>
+  </div>
+  <div class="indicateur">
+    <span class="valeur">{{ resume().unites }}</span>
+    <span class="libelle">Unités en stock</span>
+  </div>
+  <div class="indicateur alerte-orange">
+    <span class="valeur">{{ resume().alertes }}</span>
+    <span class="libelle">Produits en stock bas</span>
+  </div>
+  <div class="indicateur alerte-rouge">
+    <span class="valeur">{{ resume().ruptures }}</span>
+    <span class="libelle">Produits en rupture</span>
+  </div>
+</div>
+
+<div class="filtres">
+  <input
+    type="search"
+    placeholder="Rechercher un produit..."
+    (input)="onRecherche($event)"
+  />
+  <label class="case">
+    <input type="checkbox" (change)="onAlertes($event)" />
+    Alertes seulement
+  </label>
+</div>
+
+<div class="carte table-wrap">
+  @if (chargement()) {
+    <p class="vide">Chargement...</p>
+  } @else if (erreur()) {
+    <p class="vide">{{ erreur() }}</p>
+  } @else if (lignesFiltrees().length === 0) {
+    <p class="vide">Aucun produit trouvé.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Catégorie</th>
+          <th>Stock</th>
+          <th>Seuil</th>
+          <th>Statut</th>
+          <th>Valeur</th>
+          <th class="droite">Mouvement</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of lignesFiltrees(); track l.produit.id) {
+          <tr>
+            <td>
+              <div class="nom">{{ l.produit.nom }}</div>
+              <div class="email">{{ l.produit.reference }}</div>
+            </td>
+            <td>{{ nomsCategories().get(l.produit.categorieId) ?? "-" }}</td>
+            <td class="quantite">{{ l.stock }}</td>
+            <td>{{ l.produit.seuilAlerte }}</td>
+            <td>
+              <span [class]="'badge ' + classes[l.statut]">{{
+                libelles[l.statut]
+              }}</span>
+            </td>
+            <td>{{ l.valeur | fcfa }}</td>
+            <td>
+              <div class="actions">
+                <a
+                  class="btn btn-secondaire"
+                  routerLink="/admin/stocks/mouvements/nouveau"
+                  [queryParams]="{ produitId: l.produit.id, type: 'ENTREE' }"
+                  >+ Entrée</a
+                >
+                <a
+                  class="btn btn-secondaire"
+                  routerLink="/admin/stocks/mouvements/nouveau"
+                  [queryParams]="{ produitId: l.produit.id, type: 'SORTIE' }"
+                  >− Sortie</a
+                >
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

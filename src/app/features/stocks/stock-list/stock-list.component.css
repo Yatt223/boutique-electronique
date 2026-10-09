@@ -1,0 +1,41 @@
+.actions-entete {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.resume {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.indicateur {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.1rem 1.25rem;
+  background: white;
+  border-radius: 12px;
+  border-left: 4px solid #4f46e5;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+.indicateur .valeur {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.indicateur .libelle {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+.alerte-orange {
+  border-left-color: #ea580c;
+}
+.alerte-rouge {
+  border-left-color: #dc2626;
+}
+
+.quantite {
+  font-size: 1.1rem;
+  font-weight: 700;
+}

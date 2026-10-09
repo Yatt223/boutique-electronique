@@ -75,6 +75,10 @@
           }
         </div>
 
+        <span [class]="'badge ' + classeStock(p)">
+          {{ stockDe(p) > 0 ? "Stock : " + stockDe(p) : "Rupture" }}
+        </span>
+
         <div class="pied">
           <a
             class="btn btn-secondaire"

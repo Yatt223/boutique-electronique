@@ -64,8 +64,27 @@ export const routes: Routes = [
       },
       {
         path: 'stocks',
-        loadComponent: placeholder,
-        data: { titre: 'Stocks', permission: 'stocks:gerer' },
+        data: { permission: 'stocks:gerer' },
+        loadComponent: () =>
+          import('./features/stocks/stock-list/stock-list.component').then(
+            (m) => m.StockListComponent,
+          ),
+      },
+      {
+        path: 'stocks/mouvements',
+        data: { permission: 'stocks:gerer' },
+        loadComponent: () =>
+          import('./features/stocks/mouvement-list/mouvement-list.component').then(
+            (m) => m.MouvementListComponent,
+          ),
+      },
+      {
+        path: 'stocks/mouvements/nouveau',
+        data: { permission: 'stocks:gerer' },
+        loadComponent: () =>
+          import('./features/stocks/mouvement-form/mouvement-form.component').then(
+            (m) => m.MouvementFormComponent,
+          ),
       },
       {
         path: 'ventes',
