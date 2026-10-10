@@ -1,0 +1,174 @@
+<div class="pos">
+
+  <!-- ===== Catalogue ===== -->
+  <section class="catalogue">
+    <input
+      class="recherche"
+      type="search"
+      placeholder="Rechercher un produit ou scanner une référence puis Entrée..."
+      [value]="recherche()"
+      (input)="onRecherche($event)"
+      (keydown.enter)="onEntree()"
+    />
+
+    <div class="categories">
+      <button type="button" class="puce" [class.active]="categorieActive() === 0" (click)="categorieActive.set(0)">
+        Tout
+      </button>
+      @for (c of categories(); track c.id) {
+        <button type="button" class="puce" [class.active]="categorieActive() === c.id" (click)="categorieActive.set(c.id)">
+          {{ c.nom }}
+        </button>
+      }
+    </div>
+
+    @if (chargement()) {
+      <p class="vide">Chargement...</p>
+    } @else if (erreurChargement()) {
+      <p class="vide">{{ erreurChargement() }}</p>
+    } @else if (produitsAffiches().length === 0) {
+      <p class="vide">Aucun produit trouvé.</p>
+    } @else {
+      <div class="grille">
+        @for (p of produitsAffiches(); track p.id) {
+          <button type="button" class="article" [disabled]="stockDe(p) <= 0" (click)="ajouter(p)">
+            <div class="photo">
+              @if (p.imageUrl) {
+                <img [src]="p.imageUrl" [alt]="p.nom" />
+              } @else {
+                <span>📷</span>
+              }
+            </div>
+            <div class="nom-article">{{ p.nom }}</div>
+            <div class="prix-article">{{ p.prixVente | fcfa }}</div>
+            <span [class]="'badge ' + classeStock(p)">
+              {{ stockDe(p) > 0 ? 'Stock : ' + stockDe(p) : 'Rupture' }}
+            </span>
+          </button>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ===== Panier ===== -->
+  <aside class="panier">
+    <h3>Panier <span class="compteur">{{ panier.nombreArticles() }}</span></h3>
+
+    @if (message()) {
+      <div class="toast">{{ message() }}</div>
+    }
+
+    <div class="lignes">
+      @if (panier.lignes().length === 0) {
+        <p class="vide">Touche un produit pour l'ajouter.</p>
+      }
+      @for (l of panier.lignes(); track l.produit.id) {
+        <div class="ligne">
+          <div class="ligne-infos">
+            <div class="nom">{{ l.produit.nom }}</div>
+            <div class="email">{{ l.produit.prixVente | fcfa }} l'unité</div>
+          </div>
+          <div class="quantite-ctrl">
+            <button type="button" (click)="changerQuantite(l, -1)">−</button>
+            <span>{{ l.quantite }}</span>
+            <button type="button" (click)="changerQuantite(l, 1)">+</button>
+          </div>
+          <div class="ligne-total">{{ l.produit.prixVente * l.quantite | fcfa }}</div>
+          <button type="button" class="retirer" (click)="panier.retirer(l.produit.id)" aria-label="Retirer">✕</button>
+        </div>
+      }
+    </div>
+
+    <div class="paiement">
+      <div class="total">
+        <span>TOTAL</span>
+        <strong>{{ panier.total() | fcfa }}</strong>
+      </div>
+
+      <div class="modes">
+        @for (m of modes; track m.valeur) {
+          <button type="button" class="mode" [class.active]="modePaiement() === m.valeur" (click)="modePaiement.set(m.valeur)">
+            {{ m.libelle }}
+          </button>
+        }
+      </div>
+
+      @if (modePaiement() === 'ESPECES') {
+        <div class="champ">
+          <label for="recu">Montant reçu (FCFA)</label>
+          <input id="recu" type="number" min="0" [value]="montantRecu() || ''" (input)="onMontantRecu($event)" />
+        </div>
+        @if (montantRecu() > 0) {
+          <div class="monnaie" [class.manque]="monnaie() < 0">
+            @if (monnaie() >= 0) {
+              Monnaie à rendre : <strong>{{ monnaie() | fcfa }}</strong>
+            } @else {
+              Il manque : <strong>{{ -monnaie() | fcfa }}</strong>
+            }
+          </div>
+        }
+      }
+
+      @if (erreur()) {
+        <p class="alerte">{{ erreur() }}</p>
+      }
+
+      <button type="button" class="btn btn-primaire encaisser" [disabled]="!peutEncaisser()" (click)="encaisser()">
+        {{ enregistrement() ? 'Enregistrement...' : 'Encaisser ' + (panier.total() | fcfa) }}
+      </button>
+
+      @if (panier.lignes().length > 0) {
+        <button type="button" class="btn btn-secondaire vider" (click)="panier.vider()">Vider le panier</button>
+      }
+    </div>
+  </aside>
+</div>
+
+<!-- ===== Reçu ===== -->
+@if (recu(); as vente) {
+  <div class="voile">
+    <div class="recu-conteneur">
+      <div class="recu">
+        <h3>📱 Boutique</h3>
+        <p class="centre">Reçu n° {{ vente.numero }}</p>
+        <p class="centre">{{ vente.date | date: 'dd/MM/yyyy HH:mm' }}</p>
+        <p class="centre">Caissier(ère) : {{ utilisateur()?.prenom }} {{ utilisateur()?.nom }}</p>
+        <hr />
+
+        @for (l of vente.lignes; track l.produitId) {
+          <div class="ligne-recu">
+            <span>{{ l.quantite }} × {{ l.nomProduit }}</span>
+            <span>{{ l.quantite * l.prixUnitaire | fcfa }}</span>
+          </div>
+          <div class="detail">{{ l.prixUnitaire | fcfa }} l'unité</div>
+        }
+        <hr />
+
+        <div class="ligne-recu total-recu">
+          <span>TOTAL</span>
+          <span>{{ vente.total | fcfa }}</span>
+        </div>
+        <div class="ligne-recu">
+          <span>Paiement</span>
+          <span>{{ libelles[vente.modePaiement] }}</span>
+        </div>
+        @if (vente.montantRecu !== undefined) {
+          <div class="ligne-recu">
+            <span>Reçu</span>
+            <span>{{ vente.montantRecu | fcfa }}</span>
+          </div>
+          <div class="ligne-recu">
+            <span>Rendu</span>
+            <span>{{ vente.montantRecu - vente.total | fcfa }}</span>
+          </div>
+        }
+        <p class="centre merci">Merci de votre visite !</p>
+      </div>
+
+      <div class="recu-actions">
+        <button type="button" class="btn btn-secondaire" (click)="imprimer()">🖨️ Imprimer</button>
+        <button type="button" class="btn btn-primaire" (click)="nouvelleVente()">Nouvelle vente</button>
+      </div>
+    </div>
+  </div>
+}

@@ -14,6 +14,8 @@ export const routes: Routes = [
         (m) => m.LoginComponent,
       ),
   },
+
+  // ===== Zone d'administration =====
   {
     path: 'admin',
     canActivate: [authGuard],
@@ -30,6 +32,8 @@ export const routes: Routes = [
         loadComponent: placeholder,
         data: { titre: 'Tableau de bord', permission: 'dashboard:voir' },
       },
+
+      // Produits
       {
         path: 'produits',
         data: { permission: 'produits:gerer' },
@@ -62,6 +66,8 @@ export const routes: Routes = [
             (m) => m.ProduitFormComponent,
           ),
       },
+
+      // Stocks
       {
         path: 'stocks',
         data: { permission: 'stocks:gerer' },
@@ -86,6 +92,8 @@ export const routes: Routes = [
             (m) => m.MouvementFormComponent,
           ),
       },
+
+      // À construire dans les prochaines étapes
       {
         path: 'ventes',
         loadComponent: placeholder,
@@ -106,6 +114,8 @@ export const routes: Routes = [
         loadComponent: placeholder,
         data: { titre: 'Dépenses', permission: 'depenses:gerer' },
       },
+
+      // Employés
       {
         path: 'employes',
         data: { permission: 'employes:gerer' },
@@ -132,6 +142,8 @@ export const routes: Routes = [
       },
     ],
   },
+
+  // ===== Interface de vente (caissières) =====
   {
     path: 'vente',
     canActivate: [authGuard],
@@ -143,11 +155,14 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: placeholder,
-        data: { titre: 'Interface de vente' },
+        loadComponent: () =>
+          import('./features/vente/vente.component').then(
+            (m) => m.VenteComponent,
+          ),
       },
     ],
   },
+
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: '**', redirectTo: 'login' },
 ];
