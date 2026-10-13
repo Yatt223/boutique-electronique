@@ -9,6 +9,28 @@ export const LIBELLES_PAIEMENT: Record<ModePaiement, string> = {
   MOBILE_MONEY: 'Mobile Money',
 };
 
+export const LIBELLES_STATUT: Record<StatutVente, string> = {
+  EN_ATTENTE: 'En attente',
+  PAYEE: 'Payée',
+  ANNULEE: 'Annulée',
+  REMBOURSEE: 'Remboursée',
+};
+
+export const CLASSES_STATUT: Record<StatutVente, string> = {
+  EN_ATTENTE: 'badge-orange',
+  PAYEE: 'badge-vert',
+  ANNULEE: 'badge-rouge',
+  REMBOURSEE: 'badge-violet',
+};
+
+/** Pour chaque statut, les statuts vers lesquels on a le droit de passer. */
+export const TRANSITIONS: Record<StatutVente, StatutVente[]> = {
+  EN_ATTENTE: ['PAYEE', 'ANNULEE'],
+  PAYEE: ['REMBOURSEE', 'ANNULEE'],
+  ANNULEE: [],
+  REMBOURSEE: [],
+};
+
 export interface Vente {
   id: number;
   numero: string; // "V-2026-0001"

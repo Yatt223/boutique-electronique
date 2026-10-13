@@ -58,6 +58,10 @@ export class VenteComponent implements OnInit {
   enregistrement = signal(false);
   recu = signal<Vente | null>(null); // la vente qui vient d'être encaissée
 
+  enAttente = signal<Vente[]>([]);
+  venteReprise = signal<Vente | null>(null); // vente en attente chargée dans le panier
+  afficherAttente = signal(false);
+
   libelles = LIBELLES_PAIEMENT;
   modes = (Object.keys(LIBELLES_PAIEMENT) as ModePaiement[]).map((valeur) => ({
     valeur,
@@ -111,6 +115,8 @@ export class VenteComponent implements OnInit {
         this.chargement.set(false);
       },
     });
+
+    this.chargerEnAttente();
   }
 
   stockDe(produit: Produit): number {
@@ -177,9 +183,91 @@ export class VenteComponent implements OnInit {
     this.montantRecu.set(Number((event.target as HTMLInputElement).value) || 0);
   }
 
+  basculerAttente(): void {
+    this.afficherAttente.update((ouvert) => !ouvert);
+  }
+
+  viderPanier(): void {
+    this.panier.vider();
+    this.venteReprise.set(null);
+  }
+
+  private lignesDuPanier(): LigneArticle[] {
+    return this.panier.lignes().map((l) => ({
+      produitId: l.produit.id,
+      nomProduit: l.produit.nom,
+      prixUnitaire: l.produit.prixVente,
+      quantite: l.quantite,
+    }));
+  }
+
   private notifier(texte: string): void {
     this.message.set(texte);
     setTimeout(() => this.message.set(''), 2500);
+  }
+
+  // ----- Mise en attente -----
+
+  private chargerEnAttente(): void {
+    this.venteService
+      .getEnAttente()
+      .subscribe((liste) => this.enAttente.set(liste));
+  }
+
+  mettreEnAttente(): void {
+    const utilisateur = this.auth.utilisateur();
+    if (!utilisateur || this.panier.lignes().length === 0) {
+      return;
+    }
+
+    this.venteService
+      .mettreEnAttente({
+        lignes: this.lignesDuPanier(),
+        modePaiement: this.modePaiement(),
+        employeId: utilisateur.id,
+        venteId: this.venteReprise()?.id,
+      })
+      .subscribe({
+        next: (vente) => {
+          this.panier.vider();
+          this.venteReprise.set(null);
+          this.notifier(`Vente ${vente.numero} mise en attente.`);
+          this.chargerEnAttente();
+        },
+        error: (err) =>
+          this.erreur.set(err.message ?? 'Mise en attente impossible.'),
+      });
+  }
+
+  reprendre(vente: Vente): void {
+    if (
+      this.panier.lignes().length > 0 &&
+      !confirm('Le panier actuel sera remplacé. Continuer ?')
+    ) {
+      return;
+    }
+
+    this.panier.vider();
+    const problemes: string[] = [];
+
+    for (const ligne of vente.lignes) {
+      const produit = this.produits().find((p) => p.id === ligne.produitId);
+      if (!produit || !this.panier.ajouter(produit, this.stockDe(produit))) {
+        problemes.push(ligne.nomProduit);
+        continue;
+      }
+      if (!this.panier.changerQuantite(produit.id, ligne.quantite)) {
+        problemes.push(`${ligne.nomProduit} (quantité réduite)`);
+      }
+    }
+
+    this.venteReprise.set(vente);
+    this.modePaiement.set(vente.modePaiement);
+    this.afficherAttente.set(false);
+
+    if (problemes.length > 0) {
+      this.notifier(`Stock insuffisant pour : ${problemes.join(', ')}.`);
+    }
   }
 
   // ----- Encaissement -----
@@ -193,28 +281,24 @@ export class VenteComponent implements OnInit {
     this.erreur.set('');
     this.enregistrement.set(true);
 
-    const lignes: LigneArticle[] = this.panier.lignes().map((l) => ({
-      produitId: l.produit.id,
-      nomProduit: l.produit.nom,
-      prixUnitaire: l.produit.prixVente,
-      quantite: l.quantite,
-    }));
-
     this.venteService
       .encaisser({
-        lignes,
+        lignes: this.lignesDuPanier(),
         modePaiement: this.modePaiement(),
         employeId: utilisateur.id,
         montantRecu:
           this.modePaiement() === 'ESPECES' ? this.montantRecu() : undefined,
+        venteId: this.venteReprise()?.id,
       })
       .subscribe({
         next: (vente) => {
           this.recu.set(vente);
           this.panier.vider();
+          this.venteReprise.set(null);
           this.montantRecu.set(0);
           this.enregistrement.set(false);
           this.rechargerStocks();
+          this.chargerEnAttente();
         },
         error: (err) => {
           this.enregistrement.set(false);

@@ -1,0 +1,133 @@
+@if (chargement()) {
+  <div class="carte"><p class="vide">Chargement...</p></div>
+} @else if (vente(); as v) {
+  <div class="page-header">
+    <div>
+      <h2>Vente {{ v.numero }}</h2>
+      <p class="sous-titre">{{ v.date | date: "dd/MM/yyyy à HH:mm" }}</p>
+    </div>
+    <a class="btn btn-secondaire" routerLink="/admin/ventes"
+      >← Retour aux ventes</a
+    >
+  </div>
+
+  <div class="carte">
+    <div class="entete-vente">
+      <div>
+        <span class="etiquette">Statut</span>
+        <span [class]="'badge ' + classes[v.statut]">{{
+          libelles[v.statut]
+        }}</span>
+      </div>
+      <div>
+        <span class="etiquette">Caissier(ère)</span>
+        <strong>{{ nomEmploye(v.employeId) }}</strong>
+      </div>
+      <div>
+        <span class="etiquette">Paiement</span>
+        <strong>{{ libellesPaiement[v.modePaiement] }}</strong>
+      </div>
+      @if (v.montantRecu !== undefined) {
+        <div>
+          <span class="etiquette">Reçu / rendu</span>
+          <strong
+            >{{ v.montantRecu | fcfa }} /
+            {{ v.montantRecu - v.total | fcfa }}</strong
+          >
+        </div>
+      }
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Prix unitaire</th>
+          <th>Quantité</th>
+          <th class="droite">Sous-total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of v.lignes; track l.produitId) {
+          <tr>
+            <td class="nom">{{ l.nomProduit }}</td>
+            <td>{{ l.prixUnitaire | fcfa }}</td>
+            <td>{{ l.quantite }}</td>
+            <td class="droite">{{ l.prixUnitaire * l.quantite | fcfa }}</td>
+          </tr>
+        }
+        <tr class="ligne-total">
+          <td colspan="3">Total</td>
+          <td class="droite">{{ v.total | fcfa }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    @if (erreur()) {
+      <p class="alerte">{{ erreur() }}</p>
+    }
+
+    @if (peutRembourser() || peutAnnuler()) {
+      <div class="boutons">
+        @if (peutRembourser()) {
+          <button
+            type="button"
+            class="btn btn-secondaire"
+            [disabled]="traitement()"
+            (click)="rembourser()"
+          >
+            Rembourser
+          </button>
+        }
+        @if (peutAnnuler()) {
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="traitement()"
+            (click)="annuler()"
+          >
+            Annuler la vente
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="carte historique">
+    <h3>Mouvements de stock liés</h3>
+    @if (mouvements().length === 0) {
+      <p class="vide">Aucun mouvement de stock pour cette vente.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Produit</th>
+            <th>Type</th>
+            <th>Quantité</th>
+            <th>Motif</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of mouvements(); track m.id) {
+            <tr>
+              <td>{{ m.date | date: "dd/MM/yyyy HH:mm" }}</td>
+              <td>{{ m.produitId }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge-vert]="m.type === 'ENTREE'"
+                  [class.badge-rouge]="m.type === 'SORTIE'"
+                >
+                  {{ m.type === "ENTREE" ? "Entrée" : "Sortie" }}
+                </span>
+              </td>
+              <td>{{ m.type === "ENTREE" ? "+" : "−" }}{{ m.quantite }}</td>
+              <td>{{ libellesMotifs[m.motif] }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}

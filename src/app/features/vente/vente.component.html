@@ -1,5 +1,4 @@
 <div class="pos">
-
   <!-- ===== Catalogue ===== -->
   <section class="catalogue">
     <input
@@ -12,15 +11,58 @@
     />
 
     <div class="categories">
-      <button type="button" class="puce" [class.active]="categorieActive() === 0" (click)="categorieActive.set(0)">
+      <button
+        type="button"
+        class="puce"
+        [class.active]="categorieActive() === 0"
+        (click)="categorieActive.set(0)"
+      >
         Tout
       </button>
       @for (c of categories(); track c.id) {
-        <button type="button" class="puce" [class.active]="categorieActive() === c.id" (click)="categorieActive.set(c.id)">
+        <button
+          type="button"
+          class="puce"
+          [class.active]="categorieActive() === c.id"
+          (click)="categorieActive.set(c.id)"
+        >
           {{ c.nom }}
         </button>
       }
     </div>
+
+    <button
+      type="button"
+      class="puce attente-bouton"
+      [class.active]="afficherAttente()"
+      (click)="basculerAttente()"
+    >
+      ⏸ En attente ({{ enAttente().length }})
+    </button>
+
+    @if (afficherAttente()) {
+      <div class="attente">
+        @if (enAttente().length === 0) {
+          <p class="vide">Aucune vente en attente.</p>
+        }
+        @for (v of enAttente(); track v.id) {
+          <div class="attente-ligne">
+            <div>
+              <strong>{{ v.numero }}</strong> · {{ v.date | date: "HH:mm" }} ·
+              {{ v.lignes.length }} article(s)
+            </div>
+            <div>{{ v.total | fcfa }}</div>
+            <button
+              type="button"
+              class="btn btn-secondaire"
+              (click)="reprendre(v)"
+            >
+              Reprendre
+            </button>
+          </div>
+        }
+      </div>
+    }
 
     @if (chargement()) {
       <p class="vide">Chargement...</p>
@@ -31,7 +73,12 @@
     } @else {
       <div class="grille">
         @for (p of produitsAffiches(); track p.id) {
-          <button type="button" class="article" [disabled]="stockDe(p) <= 0" (click)="ajouter(p)">
+          <button
+            type="button"
+            class="article"
+            [disabled]="stockDe(p) <= 0"
+            (click)="ajouter(p)"
+          >
             <div class="photo">
               @if (p.imageUrl) {
                 <img [src]="p.imageUrl" [alt]="p.nom" />
@@ -42,7 +89,7 @@
             <div class="nom-article">{{ p.nom }}</div>
             <div class="prix-article">{{ p.prixVente | fcfa }}</div>
             <span [class]="'badge ' + classeStock(p)">
-              {{ stockDe(p) > 0 ? 'Stock : ' + stockDe(p) : 'Rupture' }}
+              {{ stockDe(p) > 0 ? "Stock : " + stockDe(p) : "Rupture" }}
             </span>
           </button>
         }
@@ -52,7 +99,13 @@
 
   <!-- ===== Panier ===== -->
   <aside class="panier">
-    <h3>Panier <span class="compteur">{{ panier.nombreArticles() }}</span></h3>
+    <h3>
+      Panier <span class="compteur">{{ panier.nombreArticles() }}</span>
+    </h3>
+
+    @if (venteReprise(); as reprise) {
+      <div class="reprise">Reprise de la vente {{ reprise.numero }}</div>
+    }
 
     @if (message()) {
       <div class="toast">{{ message() }}</div>
@@ -73,8 +126,17 @@
             <span>{{ l.quantite }}</span>
             <button type="button" (click)="changerQuantite(l, 1)">+</button>
           </div>
-          <div class="ligne-total">{{ l.produit.prixVente * l.quantite | fcfa }}</div>
-          <button type="button" class="retirer" (click)="panier.retirer(l.produit.id)" aria-label="Retirer">✕</button>
+          <div class="ligne-total">
+            {{ l.produit.prixVente * l.quantite | fcfa }}
+          </div>
+          <button
+            type="button"
+            class="retirer"
+            (click)="panier.retirer(l.produit.id)"
+            aria-label="Retirer"
+          >
+            ✕
+          </button>
         </div>
       }
     </div>
@@ -87,16 +149,27 @@
 
       <div class="modes">
         @for (m of modes; track m.valeur) {
-          <button type="button" class="mode" [class.active]="modePaiement() === m.valeur" (click)="modePaiement.set(m.valeur)">
+          <button
+            type="button"
+            class="mode"
+            [class.active]="modePaiement() === m.valeur"
+            (click)="modePaiement.set(m.valeur)"
+          >
             {{ m.libelle }}
           </button>
         }
       </div>
 
-      @if (modePaiement() === 'ESPECES') {
+      @if (modePaiement() === "ESPECES") {
         <div class="champ">
           <label for="recu">Montant reçu (FCFA)</label>
-          <input id="recu" type="number" min="0" [value]="montantRecu() || ''" (input)="onMontantRecu($event)" />
+          <input
+            id="recu"
+            type="number"
+            min="0"
+            [value]="montantRecu() || ''"
+            (input)="onMontantRecu($event)"
+          />
         </div>
         @if (montantRecu() > 0) {
           <div class="monnaie" [class.manque]="monnaie() < 0">
@@ -113,12 +186,36 @@
         <p class="alerte">{{ erreur() }}</p>
       }
 
-      <button type="button" class="btn btn-primaire encaisser" [disabled]="!peutEncaisser()" (click)="encaisser()">
-        {{ enregistrement() ? 'Enregistrement...' : 'Encaisser ' + (panier.total() | fcfa) }}
+      <button
+        type="button"
+        class="btn btn-primaire encaisser"
+        [disabled]="!peutEncaisser()"
+        (click)="encaisser()"
+      >
+        {{
+          enregistrement()
+            ? "Enregistrement..."
+            : "Encaisser " + (panier.total() | fcfa)
+        }}
       </button>
 
       @if (panier.lignes().length > 0) {
-        <button type="button" class="btn btn-secondaire vider" (click)="panier.vider()">Vider le panier</button>
+        <div class="boutons-bas">
+          <button
+            type="button"
+            class="btn btn-secondaire"
+            (click)="mettreEnAttente()"
+          >
+            ⏸ Mettre en attente
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondaire"
+            (click)="viderPanier()"
+          >
+            Vider
+          </button>
+        </div>
       }
     </div>
   </aside>
@@ -131,8 +228,10 @@
       <div class="recu">
         <h3>📱 Boutique</h3>
         <p class="centre">Reçu n° {{ vente.numero }}</p>
-        <p class="centre">{{ vente.date | date: 'dd/MM/yyyy HH:mm' }}</p>
-        <p class="centre">Caissier(ère) : {{ utilisateur()?.prenom }} {{ utilisateur()?.nom }}</p>
+        <p class="centre">{{ vente.date | date: "dd/MM/yyyy HH:mm" }}</p>
+        <p class="centre">
+          Caissier(ère) : {{ utilisateur()?.prenom }} {{ utilisateur()?.nom }}
+        </p>
         <hr />
 
         @for (l of vente.lignes; track l.produitId) {
@@ -166,8 +265,16 @@
       </div>
 
       <div class="recu-actions">
-        <button type="button" class="btn btn-secondaire" (click)="imprimer()">🖨️ Imprimer</button>
-        <button type="button" class="btn btn-primaire" (click)="nouvelleVente()">Nouvelle vente</button>
+        <button type="button" class="btn btn-secondaire" (click)="imprimer()">
+          🖨️ Imprimer
+        </button>
+        <button
+          type="button"
+          class="btn btn-primaire"
+          (click)="nouvelleVente()"
+        >
+          Nouvelle vente
+        </button>
       </div>
     </div>
   </div>

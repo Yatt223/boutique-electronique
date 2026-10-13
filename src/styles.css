@@ -276,3 +276,21 @@ select.ng-invalid.ng-touched {
   background: #ffedd5;
   color: #c2410c;
 }
+/* ----- Impression : seul le reçu est imprimé ----- */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .recu,
+  .recu * {
+    visibility: visible;
+  }
+  .recu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80mm;
+    padding: 0;
+    box-shadow: none;
+  }
+}

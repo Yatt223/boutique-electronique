@@ -21,11 +21,17 @@ export class StockService {
   /** Stock actuel d'UN produit, recalculé depuis ses mouvements. */
   stockActuel(produitId: number): Observable<number> {
     return this.getMouvementsProduit(produitId).pipe(
-      map(mouvements => stockParProduit(mouvements).get(produitId) ?? 0)
+      map((mouvements) => stockParProduit(mouvements).get(produitId) ?? 0),
     );
   }
 
-  creerMouvement(mouvement: Omit<MouvementStock, 'id'>): Observable<MouvementStock> {
+  creerMouvement(
+    mouvement: Omit<MouvementStock, 'id'>,
+  ): Observable<MouvementStock> {
     return this.http.post<MouvementStock>(this.url, mouvement);
+  }
+
+  getMouvementsVente(venteId: number): Observable<MouvementStock[]> {
+    return this.http.get<MouvementStock[]>(this.url, { params: { venteId } });
   }
 }
