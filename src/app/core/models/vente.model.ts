@@ -41,4 +41,5 @@ export interface Vente {
   modePaiement: ModePaiement;
   montantRecu?: number; // espèces uniquement
   statut: StatutVente;
+  sessionId?: number; // la session de caisse pendant laquelle la vente a été encaissée
 }

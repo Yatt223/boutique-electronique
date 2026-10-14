@@ -1,0 +1,134 @@
+@if (session(); as s) {
+  <div class="page-header">
+    <div>
+      <h2>Caisse du {{ s.dateOuverture | date: "dd/MM/yyyy" }}</h2>
+      <p class="sous-titre">
+        {{ nomCaissier() }} · ouverte à {{ s.dateOuverture | date: "HH:mm" }}
+        @if (s.dateCloture) {
+          · clôturée à {{ s.dateCloture | date: "HH:mm" }}
+        }
+      </p>
+    </div>
+    <a class="btn btn-secondaire" routerLink="/admin/caisse"
+      >← Retour aux caisses</a
+    >
+  </div>
+
+  <div class="modes">
+    <div class="mode-carte">
+      <span class="libelle">Espèces</span>
+      <span class="valeur">{{ totaux()?.parMode?.ESPECES ?? 0 | fcfa }}</span>
+    </div>
+    <div class="mode-carte">
+      <span class="libelle">Cartes bancaires</span>
+      <span class="valeur">{{ totaux()?.parMode?.CARTE ?? 0 | fcfa }}</span>
+    </div>
+    <div class="mode-carte">
+      <span class="libelle">Mobile Money</span>
+      <span class="valeur">{{
+        totaux()?.parMode?.MOBILE_MONEY ?? 0 | fcfa
+      }}</span>
+    </div>
+    <div class="mode-carte total">
+      <span class="libelle"
+        >Total encaissé · {{ totaux()?.nombreVentes ?? 0 }} vente(s)</span
+      >
+      <span class="valeur">{{ totaux()?.totalEncaisse ?? 0 | fcfa }}</span>
+    </div>
+  </div>
+
+  <div class="carte bloc">
+    <h3>Contrôle des espèces</h3>
+    <table>
+      <tbody>
+        <tr>
+          <td>Fond de caisse à l'ouverture</td>
+          <td class="droite">{{ s.fondInitial | fcfa }}</td>
+        </tr>
+        <tr>
+          <td>+ Espèces encaissées</td>
+          <td class="droite">{{ totaux()?.parMode?.ESPECES ?? 0 | fcfa }}</td>
+        </tr>
+        <tr class="ligne-total">
+          <td>Espèces attendues</td>
+          <td class="droite">{{ totaux()?.especesAttendues ?? 0 | fcfa }}</td>
+        </tr>
+
+        @if (s.statut === "CLOTUREE") {
+          <tr>
+            <td>Espèces comptées</td>
+            <td class="droite">{{ s.montantCompte | fcfa }}</td>
+          </tr>
+          <tr class="ligne-total">
+            <td>Écart</td>
+            <td
+              class="droite"
+              [class.manque]="(s.ecart ?? 0) < 0"
+              [class.exces]="(s.ecart ?? 0) > 0"
+            >
+              {{ s.ecart | fcfa }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (s.statut === "OUVERTE") {
+      <p class="note">
+        Caisse encore ouverte : les montants se mettent à jour à chaque vente.
+      </p>
+    }
+    @if (s.commentaire) {
+      <p class="note">
+        <strong>Commentaire de la caissière :</strong> {{ s.commentaire }}
+      </p>
+    }
+  </div>
+
+  <div class="carte bloc table-wrap">
+    <h3 class="titre-table">Ventes de la session</h3>
+
+    @if (ventesTriees().length === 0) {
+      <p class="vide">Aucune vente pendant cette session.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Heure</th>
+            <th>Paiement</th>
+            <th>Total</th>
+            <th>Statut</th>
+            <th class="droite">Détail</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of ventesTriees(); track v.id) {
+            <tr>
+              <td class="nom">{{ v.numero }}</td>
+              <td>{{ v.date | date: "HH:mm" }}</td>
+              <td>{{ libellesPaiement[v.modePaiement] }}</td>
+              <td class="nom">{{ v.total | fcfa }}</td>
+              <td>
+                <span [class]="'badge ' + classesStatut[v.statut]">{{
+                  libellesStatut[v.statut]
+                }}</span>
+              </td>
+              <td>
+                <div class="actions">
+                  <a
+                    class="btn btn-secondaire"
+                    [routerLink]="['/admin/ventes', v.id]"
+                    >Voir</a
+                  >
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+} @else {
+  <div class="carte"><p class="vide">Chargement...</p></div>
+}

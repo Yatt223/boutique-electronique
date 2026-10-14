@@ -16,7 +16,7 @@ export class PanierService {
 
   readonly total = computed(() =>
     this._lignes().reduce(
-      (somme, l) => somme + l.produit.prixVente * l.quantite,
+      (somme, l) => somme + (Number(l.produit.prixVente) || 0) * l.quantite,
       0,
     ),
   );
@@ -34,12 +34,14 @@ export class PanierService {
     }
 
     if (existante) {
+      // map() crée un NOUVEAU tableau, avec une NOUVELLE ligne pour le produit concerné
       this._lignes.update((lignes) =>
         lignes.map((l) =>
           l.produit.id === produit.id ? { ...l, quantite: l.quantite + 1 } : l,
         ),
       );
     } else {
+      // [...lignes, x] crée aussi un nouveau tableau
       this._lignes.update((lignes) => [
         ...lignes,
         { produit, quantite: 1, stockDisponible },
@@ -65,6 +67,7 @@ export class PanierService {
   }
 
   retirer(produitId: number): void {
+    // filter() crée un nouveau tableau sans la ligne retirée
     this._lignes.update((lignes) =>
       lignes.filter((l) => l.produit.id !== produitId),
     );

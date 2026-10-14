@@ -1,6 +1,30 @@
 <div class="pos">
   <!-- ===== Catalogue ===== -->
   <section class="catalogue">
+    @if (session(); as s) {
+      <div class="session-bar" [class.ancienne]="sessionAncienne()">
+        <span class="point"></span>
+        <div class="session-infos">
+          <strong>Caisse ouverte</strong> depuis
+          {{ s.dateOuverture | date: "HH:mm" }} ·
+          {{ totaux()?.nombreVentes ?? 0 }} vente(s) · Encaissé :
+          <strong>{{ totaux()?.totalEncaisse ?? 0 | fcfa }}</strong>
+          @if (sessionAncienne()) {
+            <div class="alerte-ancienne">
+              Cette caisse est ouverte depuis un autre jour : pense à la
+              clôturer.
+            </div>
+          }
+        </div>
+        <button
+          type="button"
+          class="btn btn-secondaire"
+          (click)="ouvrirCloture()"
+        >
+          Clôturer la caisse
+        </button>
+      </div>
+    }
     <input
       class="recherche"
       type="search"
@@ -145,6 +169,10 @@
       <div class="total">
         <span>TOTAL</span>
         <strong>{{ panier.total() | fcfa }}</strong>
+        <small
+          >debug : {{ panier.lignes().length }} ligne(s) · total brut =
+          {{ panier.total() }}</small
+        >
       </div>
 
       <div class="modes">
@@ -276,6 +304,191 @@
           Nouvelle vente
         </button>
       </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Ouverture de la caisse (bloque la vente tant qu'elle n'est pas ouverte) ===== -->
+@if (!chargementSession() && !session() && !resultatCloture()) {
+  <div class="voile">
+    <div class="modale">
+      <h3>Ouvrir la caisse</h3>
+      <p class="aide">
+        Compte l'argent présent dans le tiroir : c'est le fond de caisse de
+        départ.
+      </p>
+
+      <div class="champ">
+        <label for="fond">Fond de caisse (FCFA)</label>
+        <input
+          id="fond"
+          type="number"
+          min="0"
+          [value]="fondSaisi() || ''"
+          (input)="onFond($event)"
+          placeholder="0"
+        />
+      </div>
+
+      @if (erreurCaisse()) {
+        <p class="alerte">{{ erreurCaisse() }}</p>
+      }
+
+      <button
+        type="button"
+        class="btn btn-primaire plein"
+        [disabled]="traitementCaisse()"
+        (click)="ouvrirCaisse()"
+      >
+        {{ traitementCaisse() ? "Ouverture..." : "Ouvrir la caisse" }}
+      </button>
+    </div>
+  </div>
+}
+
+<!-- ===== Clôture de la caisse ===== -->
+@if (clotureOuverte() && session(); as s) {
+  <div class="voile">
+    <div class="modale">
+      <h3>Clôturer la caisse</h3>
+
+      <table class="bilan">
+        <tbody>
+          <tr>
+            <td>Espèces encaissées</td>
+            <td>{{ totaux()?.parMode?.ESPECES ?? 0 | fcfa }}</td>
+          </tr>
+          <tr>
+            <td>Cartes bancaires</td>
+            <td>{{ totaux()?.parMode?.CARTE ?? 0 | fcfa }}</td>
+          </tr>
+          <tr>
+            <td>Mobile Money</td>
+            <td>{{ totaux()?.parMode?.MOBILE_MONEY ?? 0 | fcfa }}</td>
+          </tr>
+          <tr class="sep">
+            <td>Total encaissé</td>
+            <td>{{ totaux()?.totalEncaisse ?? 0 | fcfa }}</td>
+          </tr>
+          <tr>
+            <td>Fond de caisse</td>
+            <td>{{ s.fondInitial | fcfa }}</td>
+          </tr>
+          <tr class="attendu">
+            <td>Espèces attendues dans le tiroir</td>
+            <td>{{ totaux()?.especesAttendues ?? 0 | fcfa }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="champ">
+        <label for="comptees">Espèces comptées dans le tiroir (FCFA)</label>
+        <input
+          id="comptees"
+          type="number"
+          min="0"
+          (input)="onComptees($event)"
+          placeholder="Saisis le montant compté"
+        />
+      </div>
+
+      @if (especesComptees() !== null) {
+        <div
+          class="ecart"
+          [class.ok]="ecartCloture() === 0"
+          [class.manque]="ecartCloture() < 0"
+          [class.exces]="ecartCloture() > 0"
+        >
+          @if (ecartCloture() === 0) {
+            Caisse juste : aucun écart.
+          } @else if (ecartCloture() < 0) {
+            Il manque <strong>{{ -ecartCloture() | fcfa }}</strong>
+          } @else {
+            Excédent de <strong>{{ ecartCloture() | fcfa }}</strong>
+          }
+        </div>
+      }
+
+      <div class="champ">
+        <label for="commentaire">Commentaire (facultatif)</label>
+        <textarea
+          id="commentaire"
+          rows="2"
+          (input)="onCommentaire($event)"
+          placeholder="Explication d'un écart, remarque..."
+        ></textarea>
+      </div>
+
+      @if (erreurCaisse()) {
+        <p class="alerte">{{ erreurCaisse() }}</p>
+      }
+
+      <div class="boutons-modale">
+        <button
+          type="button"
+          class="btn btn-secondaire"
+          (click)="annulerCloture()"
+        >
+          Annuler
+        </button>
+        <button
+          type="button"
+          class="btn btn-primaire"
+          [disabled]="especesComptees() === null || traitementCaisse()"
+          (click)="confirmerCloture()"
+        >
+          {{ traitementCaisse() ? "Clôture..." : "Confirmer la clôture" }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Résultat de la clôture ===== -->
+@if (resultatCloture(); as r) {
+  <div class="voile">
+    <div class="modale">
+      <h3>Caisse clôturée</h3>
+
+      <table class="bilan">
+        <tbody>
+          <tr>
+            <td>Total encaissé</td>
+            <td>
+              {{
+                (r.encaissements?.ESPECES ?? 0) +
+                  (r.encaissements?.CARTE ?? 0) +
+                  (r.encaissements?.MOBILE_MONEY ?? 0) | fcfa
+              }}
+            </td>
+          </tr>
+          <tr>
+            <td>Espèces attendues</td>
+            <td>{{ r.montantAttendu ?? 0 | fcfa }}</td>
+          </tr>
+          <tr>
+            <td>Espèces comptées</td>
+            <td>{{ r.montantCompte ?? 0 | fcfa }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div
+        class="ecart"
+        [class.ok]="(r.ecart ?? 0) === 0"
+        [class.manque]="(r.ecart ?? 0) < 0"
+        [class.exces]="(r.ecart ?? 0) > 0"
+      >
+        @if ((r.ecart ?? 0) === 0) {
+          Caisse juste : aucun écart.
+        } @else {
+          Écart : <strong>{{ r.ecart ?? 0 | fcfa }}</strong>
+        }
+      </div>
+
+      <button type="button" class="btn btn-primaire plein" (click)="terminer()">
+        Terminer et se déconnecter
+      </button>
     </div>
   </div>
 }

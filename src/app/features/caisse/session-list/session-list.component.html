@@ -1,0 +1,107 @@
+<div class="page-header">
+  <div>
+    <h2>Caisse</h2>
+    <p class="sous-titre">Sessions de caisse, encaissements et écarts</p>
+  </div>
+</div>
+
+<div class="resume">
+  <div class="indicateur vert">
+    <span class="valeur">{{ resume().ouvertes }}</span>
+    <span class="libelle">Caisse(s) ouverte(s)</span>
+  </div>
+  <div class="indicateur">
+    <span class="valeur">{{ resume().encaisseAujourdhui | fcfa }}</span>
+    <span class="libelle">Encaissé aujourd'hui (ventes payées)</span>
+  </div>
+  <div
+    class="indicateur"
+    [class.rouge]="resume().ecartDuJour < 0"
+    [class.orange]="resume().ecartDuJour > 0"
+  >
+    <span class="valeur">{{ resume().ecartDuJour | fcfa }}</span>
+    <span class="libelle">Écart cumulé des caisses clôturées aujourd'hui</span>
+  </div>
+</div>
+
+<div class="filtres">
+  <select (change)="onStatut($event)">
+    <option value="">Toutes les sessions</option>
+    <option value="OUVERTE">Ouvertes</option>
+    <option value="CLOTUREE">Clôturées</option>
+  </select>
+</div>
+
+<div class="carte table-wrap">
+  @if (chargement()) {
+    <p class="vide">Chargement...</p>
+  } @else if (erreur()) {
+    <p class="vide">{{ erreur() }}</p>
+  } @else if (lignes().length === 0) {
+    <p class="vide">Aucune session de caisse.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Ouverture</th>
+          <th>Caissier(ère)</th>
+          <th>Fond</th>
+          <th>Ventes</th>
+          <th>Encaissé</th>
+          <th>Espèces attendues</th>
+          <th>Comptées</th>
+          <th>Écart</th>
+          <th>Statut</th>
+          <th class="droite">Détail</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of lignes(); track l.session.id) {
+          <tr>
+            <td>{{ l.session.dateOuverture | date: "dd/MM/yyyy HH:mm" }}</td>
+            <td class="nom">
+              {{ nomsEmployes().get(l.session.employeId) ?? "-" }}
+            </td>
+            <td>{{ l.session.fondInitial | fcfa }}</td>
+            <td>{{ l.totaux.nombreVentes }}</td>
+            <td class="nom">{{ l.totaux.totalEncaisse | fcfa }}</td>
+            <td>{{ l.totaux.especesAttendues | fcfa }}</td>
+            <td>
+              @if (l.session.statut === "CLOTUREE") {
+                {{ l.session.montantCompte | fcfa }}
+              } @else {
+                -
+              }
+            </td>
+            <td>
+              @if (l.session.statut === "CLOTUREE") {
+                <span [class]="'badge ' + classeEcart(l.session.ecart)">{{
+                  l.session.ecart | fcfa
+                }}</span>
+              } @else {
+                -
+              }
+            </td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-vert]="l.session.statut === 'OUVERTE'"
+              >
+                {{ libelles[l.session.statut] }}
+              </span>
+            </td>
+            <td>
+              <div class="actions">
+                <a
+                  class="btn btn-secondaire"
+                  [routerLink]="['/admin/caisse', l.session.id]"
+                  >Voir</a
+                >
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

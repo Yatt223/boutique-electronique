@@ -4,7 +4,13 @@ import { forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { API_URL } from '../config/api.config';
 import { LigneArticle } from '../models/ligne-article.model';
 import { MotifMouvement } from '../models/mouvement-stock.model';
-import { LIBELLES_STATUT, ModePaiement, StatutVente, TRANSITIONS, Vente } from '../models/vente.model';
+import {
+  LIBELLES_STATUT,
+  ModePaiement,
+  StatutVente,
+  TRANSITIONS,
+  Vente,
+} from '../models/vente.model';
 import { StockService } from './stock.service';
 import { maintenantLocal } from '../utils/date.utils';
 import { stockParProduit } from '../utils/stock.utils';
@@ -14,7 +20,8 @@ export interface DemandeVente {
   modePaiement: ModePaiement;
   employeId: number;
   montantRecu?: number;
-  venteId?: number;       // renseigné quand on reprend une vente en attente
+  venteId?: number; // renseigné quand on reprend une vente en attente
+  sessionId?: number; // la session de caisse qui encaisse
 }
 
 @Injectable({ providedIn: 'root' })
@@ -32,13 +39,19 @@ export class VenteService {
   }
 
   getEnAttente(): Observable<Vente[]> {
-    return this.http.get<Vente[]>(this.url, { params: { statut: 'EN_ATTENTE' } });
+    return this.http.get<Vente[]>(this.url, {
+      params: { statut: 'EN_ATTENTE' },
+    });
+  }
+
+  getBySession(sessionId: number): Observable<Vente[]> {
+    return this.http.get<Vente[]>(this.url, { params: { sessionId } });
   }
 
   /** Met un panier de côté : aucune sortie de stock, aucun encaissement. */
   mettreEnAttente(demande: DemandeVente): Observable<Vente> {
     return this.getAll().pipe(
-      switchMap(ventes => {
+      switchMap((ventes) => {
         const { lignes, modePaiement, employeId, venteId } = demande;
 
         if (lignes.length === 0) {
@@ -48,16 +61,25 @@ export class VenteService {
         const total = this.calculerTotal(lignes);
 
         if (venteId) {
-          return this.http.patch<Vente>(`${this.url}/${venteId}`, { lignes, total, date, modePaiement });
+          return this.http.patch<Vente>(`${this.url}/${venteId}`, {
+            lignes,
+            total,
+            date,
+            modePaiement,
+          });
         }
 
         const nouvelle: Omit<Vente, 'id'> = {
           numero: this.numeroSuivant(ventes, date),
-          date, employeId, lignes, total, modePaiement,
+          date,
+          employeId,
+          lignes,
+          total,
+          modePaiement,
           statut: 'EN_ATTENTE',
         };
         return this.http.post<Vente>(this.url, nouvelle);
-      })
+      }),
     );
   }
 
@@ -71,14 +93,23 @@ export class VenteService {
       ventes: this.getAll(),
     }).pipe(
       switchMap(({ mouvements, ventes }) => {
-        const { lignes, modePaiement, employeId, montantRecu, venteId } = demande;
+        const {
+          lignes,
+          modePaiement,
+          employeId,
+          montantRecu,
+          venteId,
+          sessionId,
+        } = demande;
 
         if (lignes.length === 0) {
           throw new Error('Le panier est vide.');
         }
 
         // Une reprise n'est possible que si la vente est toujours en attente
-        const existante = venteId ? ventes.find(v => v.id === venteId) : undefined;
+        const existante = venteId
+          ? ventes.find((v) => v.id === venteId)
+          : undefined;
         if (venteId && existante?.statut !== 'EN_ATTENTE') {
           throw new Error("Cette vente n'est plus en attente.");
         }
@@ -89,7 +120,7 @@ export class VenteService {
           const disponible = stocks.get(ligne.produitId) ?? 0;
           if (ligne.quantite > disponible) {
             throw new Error(
-              `Stock insuffisant pour « ${ligne.nomProduit} » : ${disponible} disponible(s).`
+              `Stock insuffisant pour « ${ligne.nomProduit} » : ${disponible} disponible(s).`,
             );
           }
         }
@@ -99,18 +130,31 @@ export class VenteService {
 
         const enregistrement$: Observable<Vente> = existante
           ? this.http.patch<Vente>(`${this.url}/${existante.id}`, {
-              lignes, total, date, modePaiement, montantRecu, employeId, statut: 'PAYEE',
+              lignes,
+              total,
+              date,
+              modePaiement,
+              montantRecu,
+              employeId,
+              sessionId,
+              statut: 'PAYEE',
             })
           : this.http.post<Vente>(this.url, {
               numero: this.numeroSuivant(ventes, date),
-              date, employeId, lignes, total, modePaiement, montantRecu,
+              date,
+              employeId,
+              lignes,
+              total,
+              modePaiement,
+              montantRecu,
+              sessionId,
               statut: 'PAYEE',
             } as Omit<Vente, 'id'>);
 
         return enregistrement$.pipe(
-          switchMap(vente =>
+          switchMap((vente) =>
             forkJoin(
-              lignes.map(l =>
+              lignes.map((l) =>
                 this.stockService.creerMouvement({
                   produitId: l.produitId,
                   type: 'SORTIE',
@@ -119,21 +163,31 @@ export class VenteService {
                   date,
                   employeId,
                   venteId: vente.id,
-                })
-              )
-            ).pipe(map(() => vente))
-          )
+                }),
+              ),
+            ).pipe(map(() => vente)),
+          ),
         );
-      })
+      }),
     );
   }
 
   annuler(venteId: number, employeId: number): Observable<Vente> {
-    return this.changerStatut(venteId, 'ANNULEE', 'ANNULATION_VENTE', employeId);
+    return this.changerStatut(
+      venteId,
+      'ANNULEE',
+      'ANNULATION_VENTE',
+      employeId,
+    );
   }
 
   rembourser(venteId: number, employeId: number): Observable<Vente> {
-    return this.changerStatut(venteId, 'REMBOURSEE', 'RETOUR_CLIENT', employeId);
+    return this.changerStatut(
+      venteId,
+      'REMBOURSEE',
+      'RETOUR_CLIENT',
+      employeId,
+    );
   }
 
   /**
@@ -144,13 +198,13 @@ export class VenteService {
     venteId: number,
     nouveauStatut: StatutVente,
     motif: MotifMouvement,
-    employeId: number
+    employeId: number,
   ): Observable<Vente> {
     return this.getById(venteId).pipe(
-      switchMap(vente => {
+      switchMap((vente) => {
         if (!TRANSITIONS[vente.statut].includes(nouveauStatut)) {
           throw new Error(
-            `Opération impossible : la vente est déjà « ${LIBELLES_STATUT[vente.statut].toLowerCase()} ».`
+            `Opération impossible : la vente est déjà « ${LIBELLES_STATUT[vente.statut].toLowerCase()} ».`,
           );
         }
 
@@ -158,7 +212,7 @@ export class VenteService {
         const retours$: Observable<unknown> =
           vente.statut === 'PAYEE'
             ? forkJoin(
-                vente.lignes.map(l =>
+                vente.lignes.map((l) =>
                   this.stockService.creerMouvement({
                     produitId: l.produitId,
                     type: 'ENTREE',
@@ -167,15 +221,19 @@ export class VenteService {
                     date,
                     employeId,
                     venteId: vente.id,
-                  })
-                )
+                  }),
+                ),
               )
             : of(null);
 
         return retours$.pipe(
-          switchMap(() => this.http.patch<Vente>(`${this.url}/${vente.id}`, { statut: nouveauStatut }))
+          switchMap(() =>
+            this.http.patch<Vente>(`${this.url}/${vente.id}`, {
+              statut: nouveauStatut,
+            }),
+          ),
         );
-      })
+      }),
     );
   }
 
@@ -187,8 +245,8 @@ export class VenteService {
   private numeroSuivant(ventes: Vente[], date: string): string {
     const prefixe = `V-${date.slice(0, 4)}-`;
     const dernier = ventes
-      .filter(v => v.numero.startsWith(prefixe))
-      .map(v => Number(v.numero.slice(prefixe.length)))
+      .filter((v) => v.numero.startsWith(prefixe))
+      .map((v) => Number(v.numero.slice(prefixe.length)))
       .reduce((max, n) => Math.max(max, n), 0);
     return `${prefixe}${String(dernier + 1).padStart(4, '0')}`;
   }
