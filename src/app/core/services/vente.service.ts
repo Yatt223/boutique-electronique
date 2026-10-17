@@ -22,6 +22,8 @@ export interface DemandeVente {
   montantRecu?: number;
   venteId?: number; // renseigné quand on reprend une vente en attente
   sessionId?: number; // la session de caisse qui encaisse
+  commandeId?: number; // commande client livrée par cette vente
+  acompteVerse?: number; // acompte déjà encaissé à la commande
 }
 
 @Injectable({ providedIn: 'root' })
@@ -100,6 +102,8 @@ export class VenteService {
           montantRecu,
           venteId,
           sessionId,
+          commandeId,
+          acompteVerse,
         } = demande;
 
         if (lignes.length === 0) {
@@ -148,6 +152,8 @@ export class VenteService {
               modePaiement,
               montantRecu,
               sessionId,
+              commandeId,
+              acompteVerse,
               statut: 'PAYEE',
             } as Omit<Vente, 'id'>);
 

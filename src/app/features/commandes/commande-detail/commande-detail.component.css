@@ -1,0 +1,160 @@
+.bloc {
+  margin-top: 1.25rem;
+}
+
+/* ----- Progression ----- */
+.etapes {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.etapes li {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.etapes li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: calc(50% + 22px);
+  right: calc(-50% + 22px);
+  height: 3px;
+  border-radius: 2px;
+  background: #e2e8f0;
+}
+.etapes li.faite:not(:last-child)::after {
+  background: #4f46e5;
+}
+.pastille {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  font-weight: 700;
+}
+.etapes li.faite .pastille {
+  background: #4f46e5;
+  color: white;
+}
+.etapes li.courante .pastille {
+  background: #ea580c;
+  color: white;
+  box-shadow: 0 0 0 5px rgba(234, 88, 12, 0.2);
+}
+.etapes li.faite,
+.etapes li.courante {
+  color: #0f172a;
+}
+
+.bandeau-annulee {
+  padding: 0.9rem 1.1rem;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ----- Informations ----- */
+.entete-commande {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem 2.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.entete-commande > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+}
+.etiquette {
+  color: #64748b;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ligne-total td {
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-top: 2px solid #e2e8f0;
+}
+.ligne-detail td {
+  color: #475569;
+}
+.ligne-total.reste td {
+  color: #c2410c;
+}
+.notes {
+  margin: 1rem 0 0;
+  color: #475569;
+}
+.sans-marge {
+  margin: 0;
+}
+
+/* ----- Livraison ----- */
+.livraison h3 {
+  margin: 0 0 1rem;
+}
+.livraison .btn {
+  margin-top: 1rem;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+}
+.avertissement {
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 0.9rem;
+}
+.avertissement a {
+  font-weight: 600;
+  color: #9a3412;
+}
+.monnaie {
+  margin-top: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  background: #d1fae5;
+  color: #047857;
+}
+.monnaie.manque {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.actions-commande {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.actions-commande .btn {
+  padding: 0.7rem 1.4rem;
+}
+
+@media (max-width: 600px) {
+  .etapes li:not(:last-child)::after {
+    display: none;
+  }
+}

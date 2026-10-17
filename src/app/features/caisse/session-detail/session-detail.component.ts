@@ -4,7 +4,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { CaisseService } from '../../../core/services/caisse.service';
 import { VenteService } from '../../../core/services/vente.service';
+import { CommandeService } from '../../../core/services/commande.service';
 import { EmployeService } from '../../../core/services/employe.service';
+import { Commande } from '../../../core/models/commande.model';
 import { Employe } from '../../../core/models/employe.model';
 import {
   LIBELLES_STATUT_SESSION,
@@ -30,12 +32,13 @@ export class SessionDetailComponent implements OnInit {
   private router = inject(Router);
   private caisseService = inject(CaisseService);
   private venteService = inject(VenteService);
+  private commandeService = inject(CommandeService);
   private employeService = inject(EmployeService);
 
   session = signal<SessionCaisse | null>(null);
   ventes = signal<Vente[]>([]);
+  commandes = signal<Commande[]>([]);
   employes = signal<Employe[]>([]);
-  chargement = signal(true);
 
   libellesPaiement = LIBELLES_PAIEMENT;
   libellesStatutSession = LIBELLES_STATUT_SESSION;
@@ -44,7 +47,9 @@ export class SessionDetailComponent implements OnInit {
 
   totaux = computed(() => {
     const session = this.session();
-    return session ? totauxAffiches(session, this.ventes()) : null;
+    return session
+      ? totauxAffiches(session, this.ventes(), this.commandes())
+      : null;
   });
 
   nomCaissier = computed(() => {
@@ -63,13 +68,14 @@ export class SessionDetailComponent implements OnInit {
     forkJoin({
       session: this.caisseService.getById(id),
       ventes: this.venteService.getBySession(id),
+      commandes: this.commandeService.getBySession(id),
       employes: this.employeService.getAll(),
     }).subscribe({
-      next: ({ session, ventes, employes }) => {
+      next: ({ session, ventes, commandes, employes }) => {
         this.session.set(session);
         this.ventes.set(ventes);
+        this.commandes.set(commandes);
         this.employes.set(employes);
-        this.chargement.set(false);
       },
       error: () => this.router.navigate(['/admin/caisse']),
     });

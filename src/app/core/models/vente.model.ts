@@ -41,5 +41,7 @@ export interface Vente {
   modePaiement: ModePaiement;
   montantRecu?: number; // espèces uniquement
   statut: StatutVente;
-  sessionId?: number; // la session de caisse pendant laquelle la vente a été encaissée
+  sessionId?: number; // la session de caisse qui a encaissé la vente
+  commandeId?: number; // vente issue d'une commande client
+  acompteVerse?: number; // acompte déjà encaissé avant la livraison
 }

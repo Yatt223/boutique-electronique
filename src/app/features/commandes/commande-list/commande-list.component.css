@@ -1,0 +1,55 @@
+.resume {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.indicateur {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.1rem 1.25rem;
+  background: white;
+  border-radius: 12px;
+  border-left: 4px solid #4f46e5;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+.indicateur .valeur {
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+.indicateur .libelle {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+.indicateur.orange {
+  border-left-color: #ea580c;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.puce {
+  padding: 0.45rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: white;
+  color: #334155;
+  font-size: 0.86rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.puce:hover {
+  border-color: #4f46e5;
+}
+.puce.active {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: white;
+}

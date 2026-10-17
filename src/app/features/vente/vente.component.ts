@@ -14,6 +14,8 @@ import { Categorie } from '../../core/models/categorie.model';
 import { MouvementStock } from '../../core/models/mouvement-stock.model';
 import { LigneArticle } from '../../core/models/ligne-article.model';
 import { SessionCaisse } from '../../core/models/session-caisse.model';
+import { CommandeService } from '../../core/services/commande.service';
+import { Commande } from '../../core/models/commande.model';
 import {
   LIBELLES_PAIEMENT,
   ModePaiement,
@@ -43,6 +45,7 @@ export class VenteComponent implements OnInit {
   private venteService = inject(VenteService);
   private caisseService = inject(CaisseService);
   private auth = inject(AuthService);
+  private commandeService = inject(CommandeService);
 
   utilisateur = this.auth.utilisateur;
 
@@ -78,6 +81,7 @@ export class VenteComponent implements OnInit {
   especesComptees = signal<number | null>(null); // null = pas encore compté
   commentaireCloture = signal('');
   resultatCloture = signal<SessionCaisse | null>(null);
+  commandesSession = signal<Commande[]>([]);
 
   libelles = LIBELLES_PAIEMENT;
   modes = (Object.keys(LIBELLES_PAIEMENT) as ModePaiement[]).map((valeur) => ({
@@ -89,7 +93,9 @@ export class VenteComponent implements OnInit {
 
   totaux = computed(() => {
     const session = this.session();
-    return session ? calculerTotaux(session, this.ventesSession()) : null;
+    return session
+      ? calculerTotaux(session, this.ventesSession(), this.commandesSession())
+      : null;
   });
 
   ecartCloture = computed(
@@ -335,9 +341,13 @@ export class VenteComponent implements OnInit {
   private chargerVentesSession(): void {
     const session = this.session();
     if (session) {
-      this.venteService
-        .getBySession(session.id)
-        .subscribe((v) => this.ventesSession.set(v));
+      forkJoin({
+        ventes: this.venteService.getBySession(session.id),
+        commandes: this.commandeService.getBySession(session.id),
+      }).subscribe(({ ventes, commandes }) => {
+        this.ventesSession.set(ventes);
+        this.commandesSession.set(commandes);
+      });
     }
   }
 

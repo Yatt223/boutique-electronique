@@ -101,8 +101,27 @@ export const routes: Routes = [
       },
       {
         path: 'commandes',
-        loadComponent: placeholder,
-        data: { titre: 'Commandes', permission: 'commandes:gerer' },
+        data: { permission: 'commandes:gerer' },
+        loadComponent: () =>
+          import('./features/commandes/commande-list/commande-list.component').then(
+            (m) => m.CommandeListComponent,
+          ),
+      },
+      {
+        path: 'commandes/nouvelle',
+        data: { permission: 'commandes:gerer' },
+        loadComponent: () =>
+          import('./features/commandes/commande-form/commande-form.component').then(
+            (m) => m.CommandeFormComponent,
+          ),
+      },
+      {
+        path: 'commandes/:id',
+        data: { permission: 'commandes:gerer' },
+        loadComponent: () =>
+          import('./features/commandes/commande-detail/commande-detail.component').then(
+            (m) => m.CommandeDetailComponent,
+          ),
       },
       {
         path: 'caisse',

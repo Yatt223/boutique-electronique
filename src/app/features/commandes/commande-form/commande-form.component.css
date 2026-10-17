@@ -1,0 +1,62 @@
+.ligne-form {
+  display: grid;
+  grid-template-columns: 1fr 100px 140px auto;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+.sous-total {
+  text-align: right;
+  font-weight: 600;
+}
+.ajout {
+  align-self: flex-start;
+}
+
+.avertissement {
+  padding: 0.8rem 1rem;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 0.9rem;
+}
+.avertissement a {
+  font-weight: 600;
+  color: #9a3412;
+}
+
+.recap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 10px;
+  background: #eef2ff;
+}
+.recap div {
+  display: flex;
+  flex-direction: column;
+}
+.recap span {
+  font-size: 0.78rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.recap strong {
+  font-size: 1.15rem;
+  color: #312e81;
+}
+.recap .reste strong {
+  color: #c2410c;
+}
+
+@media (max-width: 600px) {
+  .ligne-form {
+    grid-template-columns: 1fr 80px;
+  }
+  .sous-total {
+    text-align: left;
+  }
+}

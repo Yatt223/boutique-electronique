@@ -1,0 +1,201 @@
+@if (commande(); as c) {
+  <div class="page-header">
+    <div>
+      <h2>Commande {{ c.numero }}</h2>
+      <p class="sous-titre">
+        Passée le {{ c.date | date: "dd/MM/yyyy à HH:mm" }}
+      </p>
+    </div>
+    <a class="btn btn-secondaire" routerLink="/admin/commandes"
+      >← Retour aux commandes</a
+    >
+  </div>
+
+  <!-- Progression -->
+  <div class="carte">
+    @if (c.statut === "ANNULEE") {
+      <div class="bandeau-annulee">Cette commande a été annulée.</div>
+    } @else {
+      <ol class="etapes">
+        @for (e of etapes; track e; let i = $index) {
+          <li
+            [class.faite]="i < etapeActive()"
+            [class.courante]="i === etapeActive()"
+          >
+            <span class="pastille">{{ i < etapeActive() ? "✓" : i + 1 }}</span>
+            <span class="nom-etape">{{ libelles[e] }}</span>
+          </li>
+        }
+      </ol>
+    }
+  </div>
+
+  <!-- Informations -->
+  <div class="carte bloc">
+    <div class="entete-commande">
+      <div>
+        <span class="etiquette">Statut</span>
+        <span [class]="'badge ' + classes[c.statut]">{{
+          libelles[c.statut]
+        }}</span>
+      </div>
+      <div>
+        <span class="etiquette">Client</span>
+        <strong>{{ c.clientNom }}</strong>
+      </div>
+      <div>
+        <span class="etiquette">Téléphone</span>
+        <strong>{{ c.clientTelephone }}</strong>
+      </div>
+      @if (c.venteId) {
+        <div>
+          <span class="etiquette">Vente générée</span>
+          <a [routerLink]="['/admin/ventes', c.venteId]">Voir la vente</a>
+        </div>
+      }
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Prix unitaire</th>
+          <th>Quantité</th>
+          <th class="droite">Sous-total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of c.lignes; track l.produitId) {
+          <tr>
+            <td class="nom">{{ l.nomProduit }}</td>
+            <td>{{ l.prixUnitaire | fcfa }}</td>
+            <td>{{ l.quantite }}</td>
+            <td class="droite">{{ l.prixUnitaire * l.quantite | fcfa }}</td>
+          </tr>
+        }
+        <tr class="ligne-total">
+          <td colspan="3">Total</td>
+          <td class="droite">{{ c.total | fcfa }}</td>
+        </tr>
+        <tr class="ligne-detail">
+          <td colspan="3">
+            Acompte versé ({{ libellesPaiement[c.modeAcompte] }})
+          </td>
+          <td class="droite">− {{ c.acompte | fcfa }}</td>
+        </tr>
+        <tr class="ligne-total reste">
+          <td colspan="3">Reste à payer</td>
+          <td class="droite">{{ reste() | fcfa }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    @if (c.notes) {
+      <p class="notes"><strong>Notes :</strong> {{ c.notes }}</p>
+    }
+  </div>
+
+  @if (erreur()) {
+    <div class="carte">
+      <p class="alerte sans-marge">{{ erreur() }}</p>
+    </div>
+  }
+
+  <!-- Livraison -->
+  @if (c.statut === "PRETE") {
+    <div class="carte bloc livraison">
+      <h3>Livrer et encaisser le solde</h3>
+
+      @if (caisseRequise()) {
+        <div class="avertissement">
+          Pour encaisser le solde, tu dois avoir une caisse ouverte.
+          <a routerLink="/vente">Ouvrir ma caisse</a>, puis reviens sur cette
+          page.
+        </div>
+      }
+
+      @if (reste() > 0) {
+        <div class="grille">
+          <div class="champ">
+            <label for="mode">Mode de paiement du solde</label>
+            <select id="mode" (change)="onMode($event)">
+              @for (m of modes; track m.valeur) {
+                <option [value]="m.valeur">{{ m.libelle }}</option>
+              }
+            </select>
+          </div>
+
+          @if (modePaiement() === "ESPECES") {
+            <div class="champ">
+              <label for="recu">Montant reçu (FCFA)</label>
+              <input
+                id="recu"
+                type="number"
+                min="0"
+                [value]="montantRecu() || ''"
+                (input)="onMontantRecu($event)"
+              />
+            </div>
+          }
+        </div>
+
+        @if (modePaiement() === "ESPECES" && montantRecu() > 0) {
+          <div class="monnaie" [class.manque]="monnaie() < 0">
+            @if (monnaie() >= 0) {
+              Monnaie à rendre : <strong>{{ monnaie() | fcfa }}</strong>
+            } @else {
+              Il manque : <strong>{{ -monnaie() | fcfa }}</strong>
+            }
+          </div>
+        }
+      } @else {
+        <p class="sous-titre">
+          L'acompte couvre tout le montant : il n'y a rien à encaisser.
+        </p>
+      }
+
+      <button
+        type="button"
+        class="btn btn-primaire"
+        [disabled]="!peutLivrer()"
+        (click)="livrer()"
+      >
+        {{
+          traitement()
+            ? "Traitement..."
+            : reste() > 0
+              ? "Livrer et encaisser " + (reste() | fcfa)
+              : "Livrer la commande"
+        }}
+      </button>
+    </div>
+  }
+
+  <!-- Actions -->
+  @if (action() || peutAnnuler()) {
+    <div class="actions-commande">
+      @if (action(); as a) {
+        <button
+          type="button"
+          class="btn btn-primaire"
+          [disabled]="traitement()"
+          (click)="avancer()"
+        >
+          {{ a.libelle }}
+        </button>
+      }
+      @if (peutAnnuler()) {
+        <button
+          type="button"
+          class="btn btn-danger"
+          [disabled]="traitement()"
+          (click)="annuler()"
+        >
+          Annuler la commande
+        </button>
+      }
+    </div>
+  }
+} @else {
+  <div class="carte"><p class="vide">Chargement...</p></div>
+}

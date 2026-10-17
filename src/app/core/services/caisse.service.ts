@@ -5,12 +5,14 @@ import { API_URL } from '../config/api.config';
 import { SessionCaisse } from '../models/session-caisse.model';
 import { calculerTotaux } from '../utils/caisse.utils';
 import { maintenantLocal } from '../utils/date.utils';
+import { CommandeService } from './commande.service';
 import { VenteService } from './vente.service';
 
 @Injectable({ providedIn: 'root' })
 export class CaisseService {
   private http = inject(HttpClient);
   private venteService = inject(VenteService);
+  private commandeService = inject(CommandeService);
   private url = `${API_URL}/sessions`;
 
   getAll(): Observable<SessionCaisse[]> {
@@ -59,8 +61,9 @@ export class CaisseService {
     return forkJoin({
       session: this.getById(id),
       ventes: this.venteService.getBySession(id),
+      commandes: this.commandeService.getBySession(id),
     }).pipe(
-      switchMap(({ session, ventes }) => {
+      switchMap(({ session, ventes, commandes }) => {
         if (session.statut !== 'OUVERTE') {
           throw new Error('Cette caisse est déjà clôturée.');
         }
@@ -68,13 +71,14 @@ export class CaisseService {
           throw new Error('Le montant compté ne peut pas être négatif.');
         }
 
-        const totaux = calculerTotaux(session, ventes);
+        const totaux = calculerTotaux(session, ventes, commandes);
 
         return this.http.patch<SessionCaisse>(`${this.url}/${id}`, {
           statut: 'CLOTUREE',
           dateCloture: maintenantLocal(),
           encaissements: totaux.parMode,
           nombreVentes: totaux.nombreVentes,
+          nombreAcomptes: totaux.nombreAcomptes,
           montantAttendu: totaux.especesAttendues,
           montantCompte,
           ecart: montantCompte - totaux.especesAttendues,

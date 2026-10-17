@@ -1,0 +1,151 @@
+<div class="carte form-carte">
+  <h2>Nouvelle commande client</h2>
+  <p class="sous-titre">
+    Saisis le client, les articles commandés et l'acompte éventuel.
+  </p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grille">
+      <div class="champ">
+        <label for="clientNom">Nom du client</label>
+        <input id="clientNom" formControlName="clientNom" />
+        @if (
+          form.controls.clientNom.touched && form.controls.clientNom.errors
+        ) {
+          <small class="erreur">Nom obligatoire (2 caractères minimum)</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="clientTelephone">Téléphone</label>
+        <input
+          id="clientTelephone"
+          formControlName="clientTelephone"
+          placeholder="+223 77 00 00 00"
+        />
+        @if (
+          form.controls.clientTelephone.touched &&
+          form.controls.clientTelephone.errors
+        ) {
+          <small class="erreur">Numéro invalide</small>
+        }
+      </div>
+
+      <div class="champ pleine-largeur" formArrayName="lignes">
+        <label>Articles commandés</label>
+
+       @for (ligne of lignes.controls; track ligne; let i = $index) {
+          <div class="ligne-form" [formGroupName]="i">
+            <select formControlName="produitId">
+              <option [ngValue]="0">-- Produit --</option>
+              @for (p of produits(); track p.id) {
+                <option [ngValue]="p.id">
+                  {{ p.nom }} · {{ p.prixVente | fcfa }}
+                </option>
+              }
+            </select>
+
+            <input
+              type="number"
+              min="1"
+              formControlName="quantite"
+              aria-label="Quantité"
+            />
+
+            <span class="sous-total">
+              {{
+                prixDe(ligne.controls.produitId.value) *
+                  ligne.controls.quantite.value | fcfa
+              }}
+            </span>
+
+            <button
+              type="button"
+              class="btn btn-danger"
+              [disabled]="lignes.length === 1"
+              (click)="retirerLigne(i)"
+            >
+              ✕
+            </button>
+          </div>
+        }
+
+        <button
+          type="button"
+          class="btn btn-secondaire ajout"
+          (click)="ajouterLigne()"
+        >
+          + Ajouter un article
+        </button>
+      </div>
+
+      <div class="champ">
+        <label for="acompte">Acompte versé (FCFA)</label>
+        <input id="acompte" type="number" min="0" formControlName="acompte" />
+        @if (acompteTropEleve()) {
+          <small class="erreur"
+            >L'acompte dépasse le total de la commande.</small
+          >
+        }
+      </div>
+
+      <div class="champ">
+        <label for="modeAcompte">Mode de paiement de l'acompte</label>
+        <select id="modeAcompte" formControlName="modeAcompte">
+          @for (m of modes; track m.valeur) {
+            <option [value]="m.valeur">{{ m.libelle }}</option>
+          }
+        </select>
+      </div>
+
+      @if (caisseRequise()) {
+        <div class="champ pleine-largeur">
+          <div class="avertissement">
+            Pour encaisser un acompte, tu dois avoir une caisse ouverte.
+            <a routerLink="/vente">Ouvrir ma caisse</a>, puis reviens sur cette
+            page.
+          </div>
+        </div>
+      }
+
+      <div class="champ pleine-largeur">
+        <label for="notes">Notes (facultatives)</label>
+        <textarea
+          id="notes"
+          rows="2"
+          formControlName="notes"
+          placeholder="Couleur, capacité, date souhaitée..."
+        ></textarea>
+      </div>
+
+      <div class="champ pleine-largeur">
+        <div class="recap">
+          <div>
+            <span>Total</span><strong>{{ total() | fcfa }}</strong>
+          </div>
+          <div>
+            <span>Acompte</span><strong>{{ acompte() | fcfa }}</strong>
+          </div>
+          <div class="reste">
+            <span>Reste à payer</span><strong>{{ reste() | fcfa }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (erreur()) {
+      <p class="alerte">{{ erreur() }}</p>
+    }
+
+    <div class="boutons">
+      <a class="btn btn-secondaire" routerLink="/admin/commandes">Annuler</a>
+      <button
+        class="btn btn-primaire"
+        type="submit"
+        [disabled]="enregistrement() || acompteTropEleve() || caisseRequise()"
+      >
+        {{ enregistrement() ? "Enregistrement..." : "Enregistrer la commande" }}
+      </button>
+    </div>
+  </form>
+</div>

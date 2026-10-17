@@ -27,12 +27,20 @@
         <span class="etiquette">Paiement</span>
         <strong>{{ libellesPaiement[v.modePaiement] }}</strong>
       </div>
+      @if (v.acompteVerse) {
+        <div>
+          <span class="etiquette">Acompte déjà versé</span>
+          <strong>{{ v.acompteVerse | fcfa }}</strong>
+        </div>
+      }
       @if (v.montantRecu !== undefined) {
         <div>
           <span class="etiquette">Reçu / rendu</span>
           <strong
             >{{ v.montantRecu | fcfa }} /
-            {{ v.montantRecu - v.total | fcfa }}</strong
+            {{
+              v.montantRecu - (v.total - (v.acompteVerse ?? 0)) | fcfa
+            }}</strong
           >
         </div>
       }

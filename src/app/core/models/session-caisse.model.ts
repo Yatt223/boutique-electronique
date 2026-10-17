@@ -12,14 +12,15 @@ export interface SessionCaisse {
   employeId: number;
   dateOuverture: string;
   dateCloture?: string;
-  fondInitial: number;                          // argent dans le tiroir à l'ouverture
+  fondInitial: number; // argent dans le tiroir à l'ouverture
   statut: StatutSession;
 
   // Photo enregistrée à la clôture
   encaissements?: Record<ModePaiement, number>; // total par mode de paiement
   nombreVentes?: number;
-  montantAttendu?: number;                      // espèces attendues dans le tiroir
-  montantCompte?: number;                       // espèces réellement comptées
-  ecart?: number;                               // compté − attendu
+  montantAttendu?: number; // espèces attendues dans le tiroir
+  montantCompte?: number; // espèces réellement comptées
+  ecart?: number; // compté − attendu
   commentaire?: string;
+  nombreAcomptes?: number; // acomptes de commandes encaissés pendant la session
 }

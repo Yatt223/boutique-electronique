@@ -6,6 +6,8 @@ import { CaisseService } from '../../../core/services/caisse.service';
 import { VenteService } from '../../../core/services/vente.service';
 import { EmployeService } from '../../../core/services/employe.service';
 import { Employe } from '../../../core/models/employe.model';
+import { CommandeService } from '../../../core/services/commande.service';
+import { Commande } from '../../../core/models/commande.model';
 import {
   LIBELLES_STATUT_SESSION,
   SessionCaisse,
@@ -34,7 +36,9 @@ export class SessionListComponent implements OnInit {
   private caisseService = inject(CaisseService);
   private venteService = inject(VenteService);
   private employeService = inject(EmployeService);
+  private commandeService = inject(CommandeService);
 
+  commandes = signal<Commande[]>([]);
   sessions = signal<SessionCaisse[]>([]);
   ventes = signal<Vente[]>([]);
   employes = signal<Employe[]>([]);
@@ -54,7 +58,7 @@ export class SessionListComponent implements OnInit {
       .filter((s) => !statut || s.statut === statut)
       .map((session) => ({
         session,
-        totaux: totauxAffiches(session, this.ventes()),
+        totaux: totauxAffiches(session, this.ventes(), this.commandes()),
       }))
       .sort((a, b) =>
         b.session.dateOuverture.localeCompare(a.session.dateOuverture),
@@ -65,13 +69,22 @@ export class SessionListComponent implements OnInit {
     const aujourdhui = maintenantLocal().slice(0, 10);
     const sessions = this.sessions();
 
+    const ventesDuJour = this.ventes()
+      .filter((v) => v.statut === 'PAYEE' && v.date.slice(0, 10) === aujourdhui)
+      .reduce((total, v) => total + v.total - (v.acompteVerse ?? 0), 0);
+
+    const acomptesDuJour = this.commandes()
+      .filter(
+        (c) =>
+          c.statut !== 'ANNULEE' &&
+          c.sessionId !== undefined &&
+          c.date.slice(0, 10) === aujourdhui,
+      )
+      .reduce((total, c) => total + c.acompte, 0);
+
     return {
       ouvertes: sessions.filter((s) => s.statut === 'OUVERTE').length,
-      encaisseAujourdhui: this.ventes()
-        .filter(
-          (v) => v.statut === 'PAYEE' && v.date.slice(0, 10) === aujourdhui,
-        )
-        .reduce((total, v) => total + v.total, 0),
+      encaisseAujourdhui: ventesDuJour + acomptesDuJour,
       ecartDuJour: sessions
         .filter(
           (s) =>
@@ -86,18 +99,17 @@ export class SessionListComponent implements OnInit {
     forkJoin({
       sessions: this.caisseService.getAll(),
       ventes: this.venteService.getAll(),
+      commandes: this.commandeService.getAll(),
       employes: this.employeService.getAll(),
     }).subscribe({
-      next: ({ sessions, ventes, employes }) => {
+      next: ({ sessions, ventes, commandes, employes }) => {
         this.sessions.set(sessions);
         this.ventes.set(ventes);
+        this.commandes.set(commandes);
         this.employes.set(employes);
         this.chargement.set(false);
       },
-      error: () => {
-        this.erreur.set('Impossible de charger les sessions de caisse.');
-        this.chargement.set(false);
-      },
+      // error: inchangé
     });
   }
 

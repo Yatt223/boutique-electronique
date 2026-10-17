@@ -127,6 +127,12 @@
           }
         </tbody>
       </table>
+      @if ((totaux()?.nombreAcomptes ?? 0) > 0) {
+        <p class="note">
+          Dont {{ totaux()?.nombreAcomptes }} acompte(s) de commandes clients
+          encaissé(s) pendant cette session.
+        </p>
+      }
     }
   </div>
 } @else {
