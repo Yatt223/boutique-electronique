@@ -1,0 +1,130 @@
+<div class="carte form-carte">
+  <h2>Nouvelle dépense</h2>
+  <p class="sous-titre">
+    Une dépense payée en espèces sort automatiquement de ta caisse ouverte.
+  </p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="grille">
+      <div class="champ pleine-largeur">
+        <label for="libelle">Libellé</label>
+        <input
+          id="libelle"
+          formControlName="libelle"
+          placeholder="Loyer d'octobre, achat de cartons..."
+        />
+        @if (form.controls.libelle.touched && form.controls.libelle.errors) {
+          <small class="erreur"
+            >Libellé obligatoire (3 caractères minimum)</small
+          >
+        }
+      </div>
+
+      <div class="champ">
+        <label for="date">Date</label>
+        <input id="date" type="date" formControlName="date" />
+        @if (form.controls.date.touched && form.controls.date.errors) {
+          <small class="erreur">Date obligatoire</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="categorie">Catégorie</label>
+        <select id="categorie" formControlName="categorie">
+          @for (c of categories; track c.valeur) {
+            <option [value]="c.valeur">{{ c.libelle }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="champ">
+        <label for="montant">Montant (FCFA)</label>
+        <input id="montant" type="number" min="1" formControlName="montant" />
+        @if (form.controls.montant.touched && form.controls.montant.errors) {
+          <small class="erreur">Saisis un montant supérieur à zéro</small>
+        }
+      </div>
+
+      <div class="champ">
+        <label for="modePaiement">Payé par</label>
+        <select id="modePaiement" formControlName="modePaiement">
+          @for (m of modes; track m.valeur) {
+            <option [value]="m.valeur">{{ m.libelle }}</option>
+          }
+        </select>
+      </div>
+
+      @if (caisseRequise()) {
+        <div class="champ pleine-largeur">
+          <div class="avertissement">
+            Une dépense en espèces sort de la caisse : tu dois avoir une caisse
+            ouverte.
+            <a routerLink="/vente">Ouvrir ma caisse</a>, puis reviens sur cette
+            page.
+          </div>
+        </div>
+      }
+
+      <div class="champ pleine-largeur">
+        <label>Justificatif (facture, reçu) · facultatif</label>
+        <div class="zone-image">
+          <div class="apercu">
+            @if (justificatif()) {
+              <img [src]="justificatif()" alt="Aperçu du justificatif" />
+            } @else {
+              <span>🧾</span>
+            }
+          </div>
+          <div class="boutons-image">
+            <label class="btn btn-secondaire" for="fichier"
+              >Choisir une image</label
+            >
+            <input
+              id="fichier"
+              class="cache"
+              type="file"
+              accept="image/*"
+              (change)="onFichier($event)"
+            />
+            @if (justificatif()) {
+              <button
+                type="button"
+                class="btn btn-danger"
+                (click)="retirerJustificatif()"
+              >
+                Retirer
+              </button>
+            }
+            <small class="indice"
+              >JPG, PNG ou WebP, 5 Mo maximum. L'image est automatiquement
+              réduite.</small
+            >
+          </div>
+        </div>
+        @if (erreurImage()) {
+          <small class="erreur">{{ erreurImage() }}</small>
+        }
+      </div>
+
+      <div class="champ pleine-largeur">
+        <label for="notes">Notes (facultatives)</label>
+        <textarea id="notes" rows="2" formControlName="notes"></textarea>
+      </div>
+    </div>
+
+    @if (erreur()) {
+      <p class="alerte">{{ erreur() }}</p>
+    }
+
+    <div class="boutons">
+      <a class="btn btn-secondaire" routerLink="/admin/depenses">Annuler</a>
+      <button
+        class="btn btn-primaire"
+        type="submit"
+        [disabled]="enregistrement() || caisseRequise()"
+      >
+        {{ enregistrement() ? "Enregistrement..." : "Enregistrer la dépense" }}
+      </button>
+    </div>
+  </form>
+</div>

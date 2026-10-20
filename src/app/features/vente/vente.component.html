@@ -372,6 +372,18 @@
           </tr>
           <tr>
             <td>Fond de caisse</td>
+            @if ((totaux()?.entrees ?? 0) > 0) {
+              <tr>
+                <td>+ Entrées de caisse</td>
+                <td>{{ totaux()?.entrees ?? 0 | fcfa }}</td>
+              </tr>
+            }
+            @if ((totaux()?.sorties ?? 0) > 0) {
+              <tr>
+                <td>− Sorties de caisse (dépenses, remboursements)</td>
+                <td>{{ totaux()?.sorties ?? 0 | fcfa }}</td>
+              </tr>
+            }
             <td>{{ s.fondInitial | fcfa }}</td>
           </tr>
           <tr class="attendu">

@@ -4,6 +4,7 @@ import { forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { API_URL } from '../config/api.config';
 import { LigneArticle } from '../models/ligne-article.model';
 import { MotifMouvement } from '../models/mouvement-stock.model';
+import { MouvementCaisseService } from './mouvement-caisse.service';
 import {
   LIBELLES_STATUT,
   ModePaiement,
@@ -30,6 +31,7 @@ export interface DemandeVente {
 export class VenteService {
   private http = inject(HttpClient);
   private stockService = inject(StockService);
+  private mouvementsCaisse = inject(MouvementCaisseService);
   private url = `${API_URL}/ventes`;
 
   getAll(): Observable<Vente[]> {
@@ -178,26 +180,37 @@ export class VenteService {
     );
   }
 
-  annuler(venteId: number, employeId: number): Observable<Vente> {
+  annuler(
+    venteId: number,
+    employeId: number,
+    sessionId?: number,
+  ): Observable<Vente> {
     return this.changerStatut(
       venteId,
       'ANNULEE',
       'ANNULATION_VENTE',
       employeId,
+      sessionId,
     );
   }
 
-  rembourser(venteId: number, employeId: number): Observable<Vente> {
+  rembourser(
+    venteId: number,
+    employeId: number,
+    sessionId?: number,
+  ): Observable<Vente> {
     return this.changerStatut(
       venteId,
       'REMBOURSEE',
       'RETOUR_CLIENT',
       employeId,
+      sessionId,
     );
   }
 
   /**
-   * Change le statut d'une vente. Si elle était payée, les articles retournent en stock.
+   * Change le statut d'une vente. Si elle était payée, les articles retournent en stock
+   * et, si elle l'avait été en espèces, l'argent sort de la caisse en cours.
    * La vente est relue sur le serveur pour éviter un double traitement.
    */
   private changerStatut(
@@ -205,6 +218,7 @@ export class VenteService {
     nouveauStatut: StatutVente,
     motif: MotifMouvement,
     employeId: number,
+    sessionId?: number,
   ): Observable<Vente> {
     return this.getById(venteId).pipe(
       switchMap((vente) => {
@@ -215,6 +229,20 @@ export class VenteService {
         }
 
         const date = maintenantLocal();
+
+        // Part réellement payée lors de cette vente (l'acompte d'une commande est à part)
+        const aRembourser = vente.total - (vente.acompteVerse ?? 0);
+        const sortieEspeces =
+          vente.statut === 'PAYEE' &&
+          vente.modePaiement === 'ESPECES' &&
+          aRembourser > 0;
+
+        if (sortieEspeces && !sessionId) {
+          throw new Error(
+            'Ouvre ta caisse pour rembourser une vente payée en espèces.',
+          );
+        }
+
         const retours$: Observable<unknown> =
           vente.statut === 'PAYEE'
             ? forkJoin(
@@ -232,7 +260,22 @@ export class VenteService {
               )
             : of(null);
 
+        const sortie$: Observable<unknown> =
+          sortieEspeces && sessionId
+            ? this.mouvementsCaisse.creer({
+                sessionId,
+                type: 'SORTIE',
+                montant: aRembourser,
+                motif: 'REMBOURSEMENT',
+                date,
+                employeId,
+                venteId: vente.id,
+                commentaire: `Vente ${vente.numero}`,
+              })
+            : of(null);
+
         return retours$.pipe(
+          switchMap(() => sortie$),
           switchMap(() =>
             this.http.patch<Vente>(`${this.url}/${vente.id}`, {
               statut: nouveauStatut,
@@ -242,7 +285,6 @@ export class VenteService {
       }),
     );
   }
-
   private calculerTotal(lignes: LigneArticle[]): number {
     return lignes.reduce((somme, l) => somme + l.prixUnitaire * l.quantite, 0);
   }

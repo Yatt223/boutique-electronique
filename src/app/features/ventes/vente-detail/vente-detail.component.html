@@ -75,6 +75,15 @@
       <p class="alerte">{{ erreur() }}</p>
     }
 
+    @if (peutAgir() && remboursementEnEspeces() && !session()) {
+      <div class="avertissement">
+        Cette vente a été payée en espèces : pour la rembourser ou l'annuler, tu
+        dois avoir une caisse ouverte.
+        <a routerLink="/vente">Ouvrir ma caisse</a>, puis reviens sur cette
+        page.
+      </div>
+    }
+
     @if (peutRembourser() || peutAnnuler()) {
       <div class="boutons">
         @if (peutRembourser()) {

@@ -23,4 +23,6 @@ export interface SessionCaisse {
   ecart?: number; // compté − attendu
   commentaire?: string;
   nombreAcomptes?: number; // acomptes de commandes encaissés pendant la session
+  entreesCaisse?: number; // entrées d'espèces hors ventes (apports, annulations)
+  sortiesCaisse?: number; // sorties d'espèces (dépenses, remboursements, versements)
 }

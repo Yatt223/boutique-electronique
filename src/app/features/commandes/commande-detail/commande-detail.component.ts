@@ -129,16 +129,27 @@ export class CommandeDetailComponent implements OnInit {
 
   annuler(): void {
     const commande = this.commande();
-    if (!commande) {
+    const utilisateur = this.auth.utilisateur();
+    if (!commande || !utilisateur) {
       return;
     }
-    const rappel =
-      commande.acompte > 0
-        ? ` Rends ${commande.acompte} FCFA d'acompte au client : ce montant sera retiré des encaissements de la caisse en cours.`
-        : '';
 
-    if (confirm(`Annuler la commande ${commande.numero} ?${rappel}`)) {
-      this.executer(this.service.changerStatut(commande.id, 'ANNULEE'));
+    const remboursement =
+      commande.acompte > 0 && commande.modeAcompte === 'ESPECES'
+        ? ` Rends ${commande.acompte} FCFA d'acompte au client : une sortie de caisse sera enregistrée.`
+        : commande.acompte > 0
+          ? ` L'acompte de ${commande.acompte} FCFA a été payé par ${LIBELLES_PAIEMENT[commande.modeAcompte].toLowerCase()} : il doit être remboursé par le même moyen.`
+          : '';
+
+    if (confirm(`Annuler la commande ${commande.numero} ?${remboursement}`)) {
+      this.executer(
+        this.service.changerStatut(
+          commande.id,
+          'ANNULEE',
+          utilisateur.id,
+          this.session()?.id,
+        ),
+      );
     }
   }
 

@@ -14,6 +14,8 @@ import {
   StatutSession,
 } from '../../../core/models/session-caisse.model';
 import { Vente } from '../../../core/models/vente.model';
+import { MouvementCaisseService } from '../../../core/services/mouvement-caisse.service';
+import { MouvementCaisse } from '../../../core/models/mouvement-caisse.model';
 import {
   TotauxSession,
   totauxAffiches,
@@ -37,11 +39,13 @@ export class SessionListComponent implements OnInit {
   private venteService = inject(VenteService);
   private employeService = inject(EmployeService);
   private commandeService = inject(CommandeService);
+  private mouvementCaisseService = inject(MouvementCaisseService);
 
   commandes = signal<Commande[]>([]);
   sessions = signal<SessionCaisse[]>([]);
   ventes = signal<Vente[]>([]);
   employes = signal<Employe[]>([]);
+  mouvements = signal<MouvementCaisse[]>([]);
   chargement = signal(true);
   erreur = signal('');
 
@@ -58,7 +62,12 @@ export class SessionListComponent implements OnInit {
       .filter((s) => !statut || s.statut === statut)
       .map((session) => ({
         session,
-        totaux: totauxAffiches(session, this.ventes(), this.commandes()),
+        totaux: totauxAffiches(
+          session,
+          this.ventes(),
+          this.commandes(),
+          this.mouvements(),
+        ),
       }))
       .sort((a, b) =>
         b.session.dateOuverture.localeCompare(a.session.dateOuverture),
@@ -100,12 +109,14 @@ export class SessionListComponent implements OnInit {
       sessions: this.caisseService.getAll(),
       ventes: this.venteService.getAll(),
       commandes: this.commandeService.getAll(),
+      mouvements: this.mouvementCaisseService.getAll(),
       employes: this.employeService.getAll(),
     }).subscribe({
-      next: ({ sessions, ventes, commandes, employes }) => {
+      next: ({ sessions, ventes, commandes, mouvements, employes }) => {
         this.sessions.set(sessions);
         this.ventes.set(ventes);
         this.commandes.set(commandes);
+        this.mouvements.set(mouvements);
         this.employes.set(employes);
         this.chargement.set(false);
       },

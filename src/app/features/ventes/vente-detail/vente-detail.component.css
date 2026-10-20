@@ -12,3 +12,14 @@
 .ligne-total td { font-size: 1.1rem; font-weight: 700; border-top: 2px solid #e2e8f0; }
 .historique { margin-top: 1.25rem; }
 .historique h3 { margin: 0 0 1rem; }
+
+.avertissement {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 0.9rem;
+}
+.avertissement a { font-weight: 600; color: #9a3412; }

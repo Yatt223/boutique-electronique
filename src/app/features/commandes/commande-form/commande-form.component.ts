@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, startWith } from 'rxjs';
+import { map,startWith } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -56,28 +56,25 @@ export class CommandeFormComponent implements OnInit {
     notes: [''],
   });
 
-  /** Valeurs complètes du formulaire, relues à chaque changement (saisie, ajout ou retrait de ligne). */
+   /** Valeurs complètes du formulaire, relues à chaque changement (saisie, ajout ou retrait de ligne). */
   private valeurs = toSignal(
     this.form.valueChanges.pipe(
       startWith(null),
-      map(() => this.form.getRawValue()),
+      map(() => this.form.getRawValue())
     ),
-    { requireSync: true },
+    { requireSync: true }
   );
 
   total = computed(() => {
-    const prix = new Map(this.produits().map((p) => [p.id, p.prixVente]));
+    const prix = new Map(this.produits().map(p => [p.id, p.prixVente]));
     return this.valeurs().lignes.reduce(
-      (somme, l) =>
-        somme +
-        (prix.get(Number(l.produitId)) ?? 0) * (Number(l.quantite) || 0),
-      0,
+      (somme, l) => somme + (prix.get(Number(l.produitId)) ?? 0) * (Number(l.quantite) || 0),
+      0
     );
   });
   acompte = computed(() => Number(this.valeurs().acompte) || 0);
   reste = computed(() => this.total() - this.acompte());
   acompteTropEleve = computed(() => this.acompte() > this.total());
-
   
   /** Un acompte ne peut être encaissé que si l'employé a une caisse ouverte. */
   caisseRequise = computed(() => this.acompte() > 0 && !this.session());

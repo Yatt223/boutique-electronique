@@ -1,0 +1,181 @@
+<div class="page-header">
+  <div>
+    <h2>Dépenses</h2>
+    <p class="sous-titre">
+      {{ depensesFiltrees().length }} dépense(s) affichée(s)
+    </p>
+  </div>
+  <a class="btn btn-primaire" routerLink="/admin/depenses/nouvelle"
+    >+ Nouvelle dépense</a
+  >
+</div>
+
+<div class="resume">
+  <div class="indicateur">
+    <span class="valeur">{{ totalMois() | fcfa }}</span>
+    <span class="libelle">Dépenses du mois en cours</span>
+  </div>
+  <div class="indicateur orange">
+    <span class="valeur">{{ totalPeriode() | fcfa }}</span>
+    <span class="libelle">Total de la liste affichée</span>
+  </div>
+  <div class="indicateur">
+    <span class="valeur">{{
+      parCategorie()[0] ? libellesCategories[parCategorie()[0].categorie] : "-"
+    }}</span>
+    <span class="libelle">Première catégorie de dépenses</span>
+  </div>
+</div>
+
+<div class="filtres">
+  <input
+    type="search"
+    placeholder="Rechercher un libellé..."
+    [value]="recherche()"
+    (input)="onRecherche($event)"
+  />
+
+  <select [value]="filtreCategorie()" (change)="onCategorie($event)">
+    <option value="">Toutes les catégories</option>
+    @for (c of categories; track c.valeur) {
+      <option [value]="c.valeur">{{ c.libelle }}</option>
+    }
+  </select>
+
+  <select [value]="filtreMode()" (change)="onMode($event)">
+    <option value="">Tous les paiements</option>
+    @for (m of modes; track m.valeur) {
+      <option [value]="m.valeur">{{ m.libelle }}</option>
+    }
+  </select>
+
+  <select [value]="filtreStatut()" (change)="onStatut($event)">
+    <option value="VALIDEE">Dépenses validées</option>
+    <option value="ANNULEE">Dépenses annulées</option>
+    <option value="">Toutes</option>
+  </select>
+
+  <label class="date"
+    >Du <input type="date" [value]="dateDebut()" (change)="onDateDebut($event)"
+  /></label>
+  <label class="date"
+    >au <input type="date" [value]="dateFin()" (change)="onDateFin($event)"
+  /></label>
+
+  <button type="button" class="btn btn-secondaire" (click)="reinitialiser()">
+    Réinitialiser
+  </button>
+</div>
+
+@if (parCategorie().length > 0) {
+  <div class="carte repartition">
+    <h3>Répartition par catégorie</h3>
+    @for (p of parCategorie(); track p.categorie) {
+      <div class="barre-ligne">
+        <div class="barre-texte">
+          <span>{{ libellesCategories[p.categorie] }}</span>
+          <span>{{ p.montant | fcfa }} · {{ p.pourcentage }} %</span>
+        </div>
+        <div class="barre-fond">
+          <div class="barre-remplie" [style.width.%]="p.pourcentage"></div>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+@if (erreurAction()) {
+  <div class="carte">
+    <p class="alerte sans-marge">{{ erreurAction() }}</p>
+  </div>
+}
+
+<div class="carte table-wrap liste">
+  @if (chargement()) {
+    <p class="vide">Chargement...</p>
+  } @else if (erreur()) {
+    <p class="vide">{{ erreur() }}</p>
+  } @else if (depensesFiltrees().length === 0) {
+    <p class="vide">Aucune dépense trouvée.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Libellé</th>
+          <th>Catégorie</th>
+          <th>Paiement</th>
+          <th>Par</th>
+          <th>Justificatif</th>
+          <th>Montant</th>
+          <th class="droite">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (d of depensesFiltrees(); track d.id) {
+          <tr [class.annulee]="d.statut === 'ANNULEE'">
+            <td>{{ d.date | date: "dd/MM/yyyy" }}</td>
+            <td>
+              <div class="nom">{{ d.libelle }}</div>
+              @if (d.notes) {
+                <div class="email">{{ d.notes }}</div>
+              }
+            </td>
+            <td>
+              <span class="badge badge-bleu">{{
+                libellesCategories[d.categorie]
+              }}</span>
+            </td>
+            <td>{{ libellesPaiement[d.modePaiement] }}</td>
+            <td>{{ nomsEmployes().get(d.employeId) ?? "-" }}</td>
+            <td>
+              @if (d.justificatifUrl) {
+                <button
+                  type="button"
+                  class="miniature"
+                  (click)="ouvrirJustificatif(d.justificatifUrl)"
+                  aria-label="Voir le justificatif"
+                >
+                  <img [src]="d.justificatifUrl" alt="Justificatif" />
+                </button>
+              } @else {
+                <span class="email">Aucun</span>
+              }
+            </td>
+            <td class="nom">{{ d.montant | fcfa }}</td>
+            <td>
+              <div class="actions">
+                @if (d.statut === "VALIDEE") {
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    (click)="annuler(d)"
+                  >
+                    Annuler
+                  </button>
+                } @else {
+                  <span class="badge badge-rouge">Annulée</span>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+@if (justificatifOuvert()) {
+  <div class="voile" (click)="fermerJustificatif()">
+    <div class="visionneuse">
+      <img [src]="justificatifOuvert()" alt="Justificatif de la dépense" />
+      <button
+        type="button"
+        class="btn btn-primaire"
+        (click)="fermerJustificatif()"
+      >
+        Fermer
+      </button>
+    </div>
+  </div>
+}

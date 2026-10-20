@@ -6,6 +6,8 @@ import { VenteService } from '../../../core/services/vente.service';
 import { EmployeService } from '../../../core/services/employe.service';
 import { StockService } from '../../../core/services/stock.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { CaisseService } from '../../../core/services/caisse.service';
+import { SessionCaisse } from '../../../core/models/session-caisse.model';
 import { Employe } from '../../../core/models/employe.model';
 import {
   LIBELLES_MOTIFS,
@@ -33,6 +35,19 @@ export class VenteDetailComponent implements OnInit {
   private employeService = inject(EmployeService);
   private stockService = inject(StockService);
   private auth = inject(AuthService);
+  private caisseService = inject(CaisseService);
+  session = signal<SessionCaisse | null>(null); // la caisse ouverte de l'utilisateur connecté
+
+  /** Vrai si le remboursement fera sortir des espèces de la caisse. */
+  remboursementEnEspeces = computed(() => {
+    const v = this.vente();
+    return (
+      !!v &&
+      v.statut === 'PAYEE' &&
+      v.modePaiement === 'ESPECES' &&
+      v.total - (v.acompteVerse ?? 0) > 0
+    );
+  });
 
   vente = signal<Vente | null>(null);
   employes = signal<Employe[]>([]);
@@ -67,6 +82,12 @@ export class VenteDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.charger();
+    const utilisateur = this.auth.utilisateur();
+    if (utilisateur) {
+      this.caisseService
+        .getOuverte(utilisateur.id)
+        .subscribe((s) => this.session.set(s));
+    }
   }
 
   private charger(): void {
@@ -97,7 +118,7 @@ export class VenteDetailComponent implements OnInit {
 
     if (confirm(`Annuler la vente ${vente.numero} ?${consequence}`)) {
       this.executer((utilisateurId) =>
-        this.venteService.annuler(vente.id, utilisateurId),
+        this.venteService.annuler(vente.id, utilisateurId, this.session()?.id),
       );
     }
   }
@@ -113,7 +134,7 @@ export class VenteDetailComponent implements OnInit {
       )
     ) {
       this.executer((utilisateurId) =>
-        this.venteService.rembourser(vente.id, utilisateurId),
+        this.venteService.annuler(vente.id, utilisateurId, this.session()?.id),
       );
     }
   }

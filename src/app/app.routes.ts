@@ -141,8 +141,19 @@ export const routes: Routes = [
       },
       {
         path: 'depenses',
-        loadComponent: placeholder,
-        data: { titre: 'Dépenses', permission: 'depenses:gerer' },
+        data: { permission: 'depenses:gerer' },
+        loadComponent: () =>
+          import('./features/depenses/depense-list/depense-list.component').then(
+            (m) => m.DepenseListComponent,
+          ),
+      },
+      {
+        path: 'depenses/nouvelle',
+        data: { permission: 'depenses:gerer' },
+        loadComponent: () =>
+          import('./features/depenses/depense-form/depense-form.component').then(
+            (m) => m.DepenseFormComponent,
+          ),
       },
 
       // Employés

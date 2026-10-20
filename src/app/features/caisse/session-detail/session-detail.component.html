@@ -46,9 +46,21 @@
           <td class="droite">{{ s.fondInitial | fcfa }}</td>
         </tr>
         <tr>
-          <td>+ Espèces encaissées</td>
+          <td>+ Espèces encaissées (ventes et acomptes)</td>
           <td class="droite">{{ totaux()?.parMode?.ESPECES ?? 0 | fcfa }}</td>
         </tr>
+        @if ((totaux()?.entrees ?? 0) > 0) {
+          <tr>
+            <td>+ Entrées de caisse</td>
+            <td class="droite">{{ totaux()?.entrees ?? 0 | fcfa }}</td>
+          </tr>
+        }
+        @if ((totaux()?.sorties ?? 0) > 0) {
+          <tr>
+            <td>− Sorties de caisse (dépenses, remboursements, versements)</td>
+            <td class="droite">− {{ totaux()?.sorties ?? 0 | fcfa }}</td>
+          </tr>
+        }
         <tr class="ligne-total">
           <td>Espèces attendues</td>
           <td class="droite">{{ totaux()?.especesAttendues ?? 0 | fcfa }}</td>
@@ -73,15 +85,134 @@
       </tbody>
     </table>
 
+    @if ((totaux()?.nombreAcomptes ?? 0) > 0) {
+      <p class="note">
+        Dont {{ totaux()?.nombreAcomptes }} acompte(s) de commandes clients
+        encaissé(s) pendant cette session.
+      </p>
+    }
     @if (s.statut === "OUVERTE") {
       <p class="note">
-        Caisse encore ouverte : les montants se mettent à jour à chaque vente.
+        Caisse encore ouverte : les montants se mettent à jour à chaque
+        opération.
       </p>
     }
     @if (s.commentaire) {
       <p class="note">
         <strong>Commentaire de la caissière :</strong> {{ s.commentaire }}
       </p>
+    }
+  </div>
+
+  <div class="carte bloc">
+    <h3>Mouvements de caisse</h3>
+
+    @if (mouvementsTries().length === 0) {
+      <p class="vide">Aucun mouvement d'espèces pendant cette session.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Heure</th>
+              <th>Type</th>
+              <th>Motif</th>
+              <th>Détail</th>
+              <th>Par</th>
+              <th class="droite">Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of mouvementsTries(); track m.id) {
+              <tr>
+                <td>{{ m.date | date: "HH:mm" }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge-vert]="m.type === 'ENTREE'"
+                    [class.badge-rouge]="m.type === 'SORTIE'"
+                  >
+                    {{ m.type === "ENTREE" ? "Entrée" : "Sortie" }}
+                  </span>
+                </td>
+                <td>{{ libellesMotifs[m.motif] }}</td>
+                <td>{{ m.commentaire ?? "-" }}</td>
+                <td>{{ nomEmploye(m.employeId) }}</td>
+                <td
+                  class="droite nom"
+                  [class.sortie]="m.type === 'SORTIE'"
+                  [class.entree]="m.type === 'ENTREE'"
+                >
+                  {{ m.type === "ENTREE" ? "+" : "−" }} {{ m.montant | fcfa }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (s.statut === "OUVERTE") {
+      <form
+        class="form-mouvement"
+        [formGroup]="form"
+        (ngSubmit)="ajouterMouvement()"
+      >
+        <h4>Enregistrer un mouvement manuel</h4>
+
+        <div class="ligne-mouvement">
+          <div class="champ">
+            <label for="type">Type</label>
+            <select id="type" formControlName="type">
+              <option value="SORTIE">Sortie (−)</option>
+              <option value="ENTREE">Entrée (+)</option>
+            </select>
+          </div>
+
+          <div class="champ">
+            <label for="motif">Motif</label>
+            <select id="motif" formControlName="motif">
+              @for (m of motifsDisponibles(); track m) {
+                <option [value]="m">{{ libellesMotifs[m] }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="champ">
+            <label for="montant">Montant (FCFA)</label>
+            <input
+              id="montant"
+              type="number"
+              min="1"
+              formControlName="montant"
+            />
+          </div>
+
+          <div class="champ commentaire">
+            <label for="commentaire">Commentaire</label>
+            <input
+              id="commentaire"
+              formControlName="commentaire"
+              placeholder="N° de bordereau, raison..."
+            />
+          </div>
+
+          <button
+            class="btn btn-primaire"
+            type="submit"
+            [disabled]="enregistrement()"
+          >
+            {{ enregistrement() ? "..." : "Enregistrer" }}
+          </button>
+        </div>
+
+        @if (form.controls.montant.touched && form.controls.montant.errors) {
+          <small class="erreur">Saisis un montant supérieur à zéro.</small>
+        }
+        @if (erreur()) {
+          <p class="alerte">{{ erreur() }}</p>
+        }
+      </form>
     }
   </div>
 
@@ -127,12 +258,6 @@
           }
         </tbody>
       </table>
-      @if ((totaux()?.nombreAcomptes ?? 0) > 0) {
-        <p class="note">
-          Dont {{ totaux()?.nombreAcomptes }} acompte(s) de commandes clients
-          encaissé(s) pendant cette session.
-        </p>
-      }
     }
   </div>
 } @else {

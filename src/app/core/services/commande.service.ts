@@ -10,8 +10,10 @@ import {
 } from '../models/commande.model';
 import { LigneArticle } from '../models/ligne-article.model';
 import { ModePaiement } from '../models/vente.model';
+import { MouvementCaisseService } from './mouvement-caisse.service';
 import { VenteService } from './vente.service';
 import { maintenantLocal } from '../utils/date.utils';
+import {  of } from 'rxjs';
 
 export interface NouvelleCommande {
   clientNom: string;
@@ -28,6 +30,7 @@ export interface NouvelleCommande {
 export class CommandeService {
   private http = inject(HttpClient);
   private venteService = inject(VenteService);
+  private mouvementsCaisse = inject(MouvementCaisseService);
   private url = `${API_URL}/commandes`;
 
   getAll(): Observable<Commande[]> {
@@ -79,9 +82,12 @@ export class CommandeService {
   }
 
   /** Confirmer, marquer prête ou annuler. (La livraison passe par `livrer`.) */
+  /** Confirmer, marquer prête ou annuler. (La livraison passe par `livrer`.) */
   changerStatut(
     id: number,
     nouveauStatut: StatutCommande,
+    employeId?: number,
+    sessionId?: number,
   ): Observable<Commande> {
     return this.getById(id).pipe(
       switchMap((commande) => {
@@ -95,9 +101,40 @@ export class CommandeService {
             `Opération impossible : la commande est déjà « ${LIBELLES_STATUT_COMMANDE[commande.statut].toLowerCase()} ».`,
           );
         }
-        return this.http.patch<Commande>(`${this.url}/${id}`, {
-          statut: nouveauStatut,
-        });
+
+        // Annuler une commande dont l'acompte a été payé en espèces : l'argent sort de la caisse
+        const remboursementEspeces =
+          nouveauStatut === 'ANNULEE' &&
+          commande.acompte > 0 &&
+          commande.modeAcompte === 'ESPECES';
+
+        if (remboursementEspeces && (!sessionId || employeId === undefined)) {
+          throw new Error(
+            "Ouvre ta caisse pour rembourser l'acompte payé en espèces.",
+          );
+        }
+
+        const sortie$: Observable<unknown> =
+          remboursementEspeces && sessionId && employeId !== undefined
+            ? this.mouvementsCaisse.creer({
+                sessionId,
+                type: 'SORTIE',
+                montant: commande.acompte,
+                motif: 'REMBOURSEMENT',
+                date: maintenantLocal(),
+                employeId,
+                commandeId: commande.id,
+                commentaire: `Acompte commande ${commande.numero}`,
+              })
+            : of(null);
+
+        return sortie$.pipe(
+          switchMap(() =>
+            this.http.patch<Commande>(`${this.url}/${id}`, {
+              statut: nouveauStatut,
+            }),
+          ),
+        );
       }),
     );
   }

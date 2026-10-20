@@ -21,6 +21,8 @@ import {
   ModePaiement,
   Vente,
 } from '../../core/models/vente.model';
+import { MouvementCaisseService } from '../../core/services/mouvement-caisse.service';
+import { MouvementCaisse } from '../../core/models/mouvement-caisse.model';
 import {
   CLASSES_STATUT_STOCK,
   statutStock,
@@ -46,12 +48,14 @@ export class VenteComponent implements OnInit {
   private caisseService = inject(CaisseService);
   private auth = inject(AuthService);
   private commandeService = inject(CommandeService);
+  private mouvementCaisseService = inject(MouvementCaisseService);
 
   utilisateur = this.auth.utilisateur;
 
   produits = signal<Produit[]>([]);
   categories = signal<Categorie[]>([]);
   mouvements = signal<MouvementStock[]>([]);
+  mouvementsSession = signal<MouvementCaisse[]>([]);
   chargement = signal(true);
   erreurChargement = signal('');
 
@@ -94,7 +98,12 @@ export class VenteComponent implements OnInit {
   totaux = computed(() => {
     const session = this.session();
     return session
-      ? calculerTotaux(session, this.ventesSession(), this.commandesSession())
+      ? calculerTotaux(
+          session,
+          this.ventesSession(),
+          this.commandesSession(),
+          this.mouvementsSession(),
+        )
       : null;
   });
 
@@ -344,9 +353,11 @@ export class VenteComponent implements OnInit {
       forkJoin({
         ventes: this.venteService.getBySession(session.id),
         commandes: this.commandeService.getBySession(session.id),
-      }).subscribe(({ ventes, commandes }) => {
+        mouvements: this.mouvementCaisseService.getBySession(session.id),
+      }).subscribe(({ ventes, commandes, mouvements }) => {
         this.ventesSession.set(ventes);
         this.commandesSession.set(commandes);
+        this.mouvementsSession.set(mouvements);
       });
     }
   }

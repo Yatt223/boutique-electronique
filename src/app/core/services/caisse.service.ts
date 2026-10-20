@@ -6,6 +6,7 @@ import { SessionCaisse } from '../models/session-caisse.model';
 import { calculerTotaux } from '../utils/caisse.utils';
 import { maintenantLocal } from '../utils/date.utils';
 import { CommandeService } from './commande.service';
+import { MouvementCaisseService } from './mouvement-caisse.service';
 import { VenteService } from './vente.service';
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +14,7 @@ export class CaisseService {
   private http = inject(HttpClient);
   private venteService = inject(VenteService);
   private commandeService = inject(CommandeService);
+  private mouvementsCaisse = inject(MouvementCaisseService);
   private url = `${API_URL}/sessions`;
 
   getAll(): Observable<SessionCaisse[]> {
@@ -53,6 +55,7 @@ export class CaisseService {
   }
 
   /** Clôture : calcule les totaux, les enregistre, et mesure l'écart avec les espèces comptées. */
+  /** Clôture : calcule les totaux, les enregistre, et mesure l'écart avec les espèces comptées. */
   cloturer(
     id: number,
     montantCompte: number,
@@ -62,8 +65,9 @@ export class CaisseService {
       session: this.getById(id),
       ventes: this.venteService.getBySession(id),
       commandes: this.commandeService.getBySession(id),
+      mouvements: this.mouvementsCaisse.getBySession(id),
     }).pipe(
-      switchMap(({ session, ventes, commandes }) => {
+      switchMap(({ session, ventes, commandes, mouvements }) => {
         if (session.statut !== 'OUVERTE') {
           throw new Error('Cette caisse est déjà clôturée.');
         }
@@ -71,7 +75,7 @@ export class CaisseService {
           throw new Error('Le montant compté ne peut pas être négatif.');
         }
 
-        const totaux = calculerTotaux(session, ventes, commandes);
+        const totaux = calculerTotaux(session, ventes, commandes, mouvements);
 
         return this.http.patch<SessionCaisse>(`${this.url}/${id}`, {
           statut: 'CLOTUREE',
@@ -79,6 +83,8 @@ export class CaisseService {
           encaissements: totaux.parMode,
           nombreVentes: totaux.nombreVentes,
           nombreAcomptes: totaux.nombreAcomptes,
+          entreesCaisse: totaux.entrees,
+          sortiesCaisse: totaux.sorties,
           montantAttendu: totaux.especesAttendues,
           montantCompte,
           ecart: montantCompte - totaux.especesAttendues,

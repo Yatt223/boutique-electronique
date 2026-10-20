@@ -1,56 +1,31 @@
-.bloc {
-  margin-top: 1.25rem;
+.entree {
+  color: #047857;
 }
-.bloc h3 {
-  margin: 0 0 1rem;
-}
-.titre-table {
-  padding: 1.25rem 1.25rem 0;
-}
-
-.modes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 1rem;
-}
-.mode-carte {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 1.1rem 1.25rem;
-  border-radius: 12px;
-  background: white;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-}
-.mode-carte .libelle {
-  font-size: 0.82rem;
-  color: #64748b;
-}
-.mode-carte .valeur {
-  font-size: 1.3rem;
-  font-weight: 700;
-}
-.mode-carte.total {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  color: white;
-}
-.mode-carte.total .libelle {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.ligne-total td {
-  font-size: 1.05rem;
-  font-weight: 700;
-  border-top: 2px solid #e2e8f0;
-}
-.manque {
+.sortie {
   color: #b91c1c;
 }
-.exces {
-  color: #c2410c;
+
+.form-mouvement {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e2e8f0;
 }
-.note {
-  margin: 1rem 0 0;
+.form-mouvement h4 {
+  margin: 0 0 0.9rem;
+  font-size: 0.95rem;
   color: #475569;
-  font-size: 0.9rem;
+}
+.ligne-mouvement {
+  display: grid;
+  grid-template-columns: 130px 190px 150px 1fr auto;
+  align-items: end;
+  gap: 0.8rem;
+}
+@media (max-width: 900px) {
+  .ligne-mouvement {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ligne-mouvement .commentaire {
+    grid-column: 1 / -1;
+  }
 }
