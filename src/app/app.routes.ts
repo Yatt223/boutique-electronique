@@ -29,8 +29,11 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
-        loadComponent: placeholder,
-        data: { titre: 'Tableau de bord', permission: 'dashboard:voir' },
+        data: { permission: 'dashboard:voir' },
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent,
+          ),
       },
 
       // Produits

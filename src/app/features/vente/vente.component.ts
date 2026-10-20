@@ -250,6 +250,7 @@ export class VenteComponent implements OnInit {
       produitId: l.produit.id,
       nomProduit: l.produit.nom,
       prixUnitaire: l.produit.prixVente,
+      prixAchat: l.produit.prixAchat,
       quantite: l.quantite,
     }));
   }

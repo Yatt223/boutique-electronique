@@ -1,0 +1,250 @@
+<div class="page-header">
+  <div>
+    <h2>Tableau de bord</h2>
+    <p class="sous-titre">Du {{ periode().debut }} au {{ periode().fin }}</p>
+  </div>
+  <button type="button" class="btn btn-secondaire" (click)="actualiser()">
+    ↻ Actualiser
+  </button>
+</div>
+
+<div class="periodes">
+  @for (p of presets; track p.valeur) {
+    <button
+      type="button"
+      class="puce"
+      [class.active]="preset() === p.valeur"
+      (click)="choisirPreset(p.valeur)"
+    >
+      {{ p.libelle }}
+    </button>
+  }
+
+  @if (preset() === "PERSO") {
+    <label class="date"
+      >Du <input type="date" [value]="debutPerso()" (change)="onDebut($event)"
+    /></label>
+    <label class="date"
+      >au <input type="date" [value]="finPerso()" (change)="onFin($event)"
+    /></label>
+  }
+</div>
+
+@if (erreur()) {
+  <div class="carte">
+    <p class="vide">{{ erreur() }}</p>
+  </div>
+} @else if (chargement()) {
+  <div class="carte"><p class="vide">Chargement des statistiques...</p></div>
+} @else {
+  <!-- Indicateurs principaux -->
+  <section class="kpis">
+    <div class="kpi principal">
+      <span class="libelle">Chiffre d'affaires</span>
+      <span class="valeur">{{ chiffreAffaires() | fcfa }}</span>
+      @if (variation(); as v) {
+        <span
+          class="variation"
+          [class.hausse]="v.positive"
+          [class.baisse]="!v.positive"
+        >
+          {{ v.positive ? "▲" : "▼" }} {{ v.valeur }} % par rapport à la période
+          précédente
+        </span>
+      } @else {
+        <span class="variation neutre"
+          >Pas de période précédente comparable</span
+        >
+      }
+    </div>
+
+    <div class="kpi">
+      <span class="libelle">Ventes payées</span>
+      <span class="valeur">{{ nombreVentes() }}</span>
+      <span class="detail">Panier moyen : {{ panierMoyen() | fcfa }}</span>
+    </div>
+
+    <div class="kpi">
+      <span class="libelle">Marge brute</span>
+      <span class="valeur">{{ margeBrute() | fcfa }}</span>
+      <span class="detail">{{ tauxMarge() }} % du chiffre d'affaires</span>
+    </div>
+
+    <a class="kpi lien" routerLink="/admin/depenses">
+      <span class="libelle">Dépenses</span>
+      <span class="valeur">{{ depensesPeriode() | fcfa }}</span>
+      <span class="detail">Voir le détail →</span>
+    </a>
+
+    <div
+      class="kpi"
+      [class.perte]="benefice() < 0"
+      [class.gain]="benefice() >= 0"
+    >
+      <span class="libelle">Bénéfice net estimé</span>
+      <span class="valeur">{{ benefice() | fcfa }}</span>
+      <span class="detail">Marge brute − dépenses</span>
+    </div>
+
+    <a class="kpi lien" routerLink="/admin/commandes">
+      <span class="libelle">Commandes en cours</span>
+      <span class="valeur">{{ commandesOuvertes().length }}</span>
+      <span class="detail">
+        {{ commandesPretes() }} prête(s) · reste à encaisser
+        {{ resteAEncaisser() | fcfa }}
+      </span>
+    </a>
+  </section>
+
+  <!-- Graphique -->
+  <section class="carte panneau">
+    <div class="panneau-titre">
+      <h3>Chiffre d'affaires par jour</h3>
+      @if (meilleurJour(); as m) {
+        <span class="detail"
+          >Meilleur jour : {{ m.jour }} · {{ m.montant | fcfa }}</span
+        >
+      }
+    </div>
+
+    @if (nombreVentes() === 0) {
+      <p class="vide">Aucune vente payée sur cette période.</p>
+    } @else {
+      <div class="graphique" [class.dense]="barresParJour().length > 31">
+        @for (b of barresParJour(); track b.jour) {
+          <div class="colonne" [title]="b.jour + ' : ' + (b.montant | fcfa)">
+            <div class="zone-barre">
+              <div class="barre" [style.height.%]="b.hauteur"></div>
+            </div>
+            <span class="jour">{{ b.etiquette }}</span>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <div class="colonnes">
+    <section class="carte panneau">
+      <div class="panneau-titre">
+        <h3>Meilleurs produits</h3>
+        <a routerLink="/admin/produits">Catalogue</a>
+      </div>
+
+      @if (meilleursProduits().length === 0) {
+        <p class="vide">Aucune vente sur cette période.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Produit</th>
+              <th>Qté</th>
+              <th class="droite">Chiffre d'affaires</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of meilleursProduits(); track p.nom; let i = $index) {
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td class="nom">{{ p.nom }}</td>
+                <td>{{ p.quantite }}</td>
+                <td class="droite">{{ p.ca | fcfa }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+
+    <section class="carte panneau">
+      <div class="panneau-titre">
+        <h3>Ventes par mode de paiement</h3>
+      </div>
+
+      @for (m of parModePaiement(); track m.mode) {
+        <div class="barre-ligne">
+          <div class="barre-texte">
+            <span>{{ libellesPaiement[m.mode] }}</span>
+            <span>{{ m.montant | fcfa }} · {{ m.pourcentage }} %</span>
+          </div>
+          <div class="barre-fond">
+            <div class="barre-remplie" [style.width.%]="m.pourcentage"></div>
+          </div>
+        </div>
+      }
+
+      <h4 class="sous-section">Par caissier(ère)</h4>
+      @if (parCaissier().length === 0) {
+        <p class="vide">Aucune vente sur cette période.</p>
+      } @else {
+        <table>
+          <tbody>
+            @for (c of parCaissier(); track c.nom) {
+              <tr>
+                <td class="nom">{{ c.nom }}</td>
+                <td>{{ c.ventes }} vente(s)</td>
+                <td class="droite">{{ c.ca | fcfa }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+
+    <section class="carte panneau">
+      <div class="panneau-titre">
+        <h3>Alertes de stock</h3>
+        <a routerLink="/admin/stocks">Voir les stocks</a>
+      </div>
+
+      @if (alertesStock().length === 0) {
+        <p class="vide">Aucune alerte : tous les stocks sont suffisants.</p>
+      } @else {
+        <table>
+          <tbody>
+            @for (a of alertesStock(); track a.produit.id) {
+              <tr>
+                <td class="nom">{{ a.produit.nom }}</td>
+                <td>{{ a.stock }} en stock</td>
+                <td class="droite">
+                  <span [class]="'badge ' + classesStatutStock[a.statut]">{{
+                    libellesStatutStock[a.statut]
+                  }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+
+    <section class="carte panneau">
+      <div class="panneau-titre">
+        <h3>Caisses</h3>
+        <a routerLink="/admin/caisse">Voir les caisses</a>
+      </div>
+
+      <div class="mini-kpis">
+        <div>
+          <span class="libelle">Caisse(s) ouverte(s)</span>
+          <strong>{{ sessionsOuvertes() }}</strong>
+        </div>
+        <div>
+          <span class="libelle">Écart des caisses clôturées</span>
+          <strong
+            [class.manque]="ecartCaisses() < 0"
+            [class.exces]="ecartCaisses() > 0"
+          >
+            {{ ecartCaisses() | fcfa }}
+          </strong>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <p class="note-calcul">
+    Le bénéfice net est une <strong>estimation</strong> : chiffre d'affaires des
+    ventes payées, moins le prix d'achat des produits vendus, moins les dépenses
+    validées. Les achats de marchandises ne sont pas comptés dans les dépenses.
+  </p>
+}
