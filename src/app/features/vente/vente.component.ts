@@ -31,6 +31,7 @@ import {
 import { calculerTotaux } from '../../core/utils/caisse.utils';
 import { maintenantLocal } from '../../core/utils/date.utils';
 import { FcfaPipe } from '../../shared/pipes/fcfa.pipe';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-vente',
@@ -49,6 +50,7 @@ export class VenteComponent implements OnInit {
   private auth = inject(AuthService);
   private commandeService = inject(CommandeService);
   private mouvementCaisseService = inject(MouvementCaisseService);
+  private notifications = inject(NotificationService);
 
   utilisateur = this.auth.utilisateur;
 
@@ -490,6 +492,7 @@ export class VenteComponent implements OnInit {
           this.rechargerStocks();
           this.chargerEnAttente();
           this.chargerVentesSession();
+          this.notifications.succes(`Vente ${vente.numero} enregistrée.`);
         },
         error: (err) => {
           this.enregistrement.set(false);

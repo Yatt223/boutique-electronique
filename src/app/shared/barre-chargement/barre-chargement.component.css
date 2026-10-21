@@ -1,0 +1,26 @@
+.barre {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  height: 3px;
+  overflow: hidden;
+  background: rgba(79, 70, 229, 0.2);
+}
+.barre::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: #4f46e5;
+  animation: defile 1s ease-in-out infinite;
+}
+@keyframes defile {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}

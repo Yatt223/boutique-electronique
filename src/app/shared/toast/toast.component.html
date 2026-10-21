@@ -1,0 +1,16 @@
+<div class="pile" aria-live="polite">
+  @for (n of service.notifications(); track n.id) {
+    <div
+      class="toast"
+      role="status"
+      [class.succes]="n.type === 'succes'"
+      [class.erreur]="n.type === 'erreur'"
+      [class.info]="n.type === 'info'"
+    >
+      <span class="message">{{ n.message }}</span>
+      <button type="button" aria-label="Fermer" (click)="service.fermer(n.id)">
+        ✕
+      </button>
+    </div>
+  }
+</div>
